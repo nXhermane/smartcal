@@ -4,7 +4,7 @@ export default withMermaid({
   title: 'SmartCal',
   description: 'Ultra High-Performance Mathematical & Logical Expression Engine for TypeScript / JavaScript',
   lang: 'fr-FR',
-  base: '/',
+  base: '/smartcal/',
   cleanUrls: true,
   lastUpdated: true,
 

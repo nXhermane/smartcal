@@ -1,6 +1,6 @@
 {
   "name": "smartcal",
-  "version": "1.0.14",
+  "version": "1.1.0",
   "type": "module",
   "description": "Ultra-high-performance mathematical expression engine with JIT compilation (~2.5M+ ops/s), CSP-safe VM mode, Pratt parser, and zero dependencies. Evaluate dynamic formulas safely without eval().",
   "main": "./dist/index.cjs",

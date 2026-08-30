@@ -4,7 +4,10 @@
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "changelog-path": "CHANGELOG.md",
+  "include-component-in-tag": false,
   "packages": {
-    ".": {}
+    ".": {
+      "bootstrap-sha": "f148e01f12a144d263f1acb2fd1ae9171188cb89"
+    }
   }
 }

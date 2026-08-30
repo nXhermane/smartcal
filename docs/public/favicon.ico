@@ -1,0 +1,33 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="scTitleFav">
+  <title id="scTitleFav">SmartCal</title>
+
+  <defs>
+    <linearGradient id="sc-bg-f" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0b0f19"/>
+    </linearGradient>
+
+    <linearGradient id="sc-main-f" x1="5%" y1="0%" x2="95%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <linearGradient id="sc-accent-f" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle background, no soft decoration: flat and crisp so it survives 16px -->
+  <rect x="0" y="0" width="120" height="120" rx="26" fill="url(#sc-bg-f)"/>
+
+  <!-- Sigma / S monogram, bolder stroke for tiny-size legibility -->
+  <path d="M32,32 L88,32 L70,54 L44,60 L88,88 L32,88"
+        fill="none" stroke="url(#sc-main-f)" stroke-width="10.5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Lightning bolt fused into the compile point -->
+  <path d="M66,55 L66,41 L49,61.5 L62,61.5 L62,75 L79,55 Z"
+        fill="url(#sc-accent-f)"/>
+</svg>

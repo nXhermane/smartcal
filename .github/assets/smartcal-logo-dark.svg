@@ -1,0 +1,68 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="scTitle">
+  <title id="scTitle">SmartCal</title>
+
+  <defs>
+    <linearGradient id="sc-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0b0f19"/>
+    </linearGradient>
+
+    <linearGradient id="sc-main" x1="5%" y1="0%" x2="95%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <linearGradient id="sc-accent" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+
+    <linearGradient id="sc-sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="sc-glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="sc-glow-soft" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle background -->
+  <rect x="0" y="0" width="120" height="120" rx="24" fill="url(#sc-bg)"/>
+  <rect x="1.25" y="1.25" width="117.5" height="117.5" rx="23" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+
+  <!-- Glass sheen -->
+  <rect x="6" y="6" width="108" height="44" rx="18" fill="url(#sc-sheen)" opacity="0.05"/>
+
+  <!-- Ambient glow behind the mark -->
+  <circle cx="60" cy="60" r="36" fill="url(#sc-main)" opacity="0.10" filter="url(#sc-glow-soft)"/>
+
+  <!-- Speed streaks -->
+  <g stroke="url(#sc-accent)" stroke-linecap="round">
+    <line x1="10" y1="98" x2="27" y2="81" stroke-width="4" opacity="0.6"/>
+    <line x1="8" y1="88" x2="19" y2="77" stroke-width="3" opacity="0.4"/>
+    <line x1="7" y1="79" x2="14" y2="72" stroke-width="2" opacity="0.22"/>
+  </g>
+
+  <!-- Sigma / S monogram, kinked by the JIT compile point -->
+  <g filter="url(#sc-glow)">
+    <path d="M34,34 L86,34 L70,54 L46,60 L86,86 L34,86"
+          fill="none" stroke="url(#sc-main)" stroke-width="8.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Lightning bolt fused into the compile point -->
+  <g filter="url(#sc-glow)">
+    <path d="M65.7,54.6 L65.7,42.7 L50.4,61.4 L62.3,61.4 L62.3,73.3 L77.6,54.6 Z"
+          fill="url(#sc-accent)"/>
+  </g>
+</svg>

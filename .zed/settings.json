@@ -1,0 +1,47 @@
+{
+  "languages": {
+    "TypeScript": {
+      "formatter": {
+        "external": {
+          "command": "biome",
+          "arguments": ["format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "language_servers": ["typescript-ls", "!vtsls", "!eslint", "!typescript-language-server"]
+    },
+    "TSX": {
+      "formatter": {
+        "external": {
+          "command": "biome",
+          "arguments": ["format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "language_servers": ["typescript-ls", "!vtsls", "!eslint", "!typescript-language-server"]
+    },
+    "JavaScript": {
+      "formatter": {
+        "external": {
+          "command": "biome",
+          "arguments": ["format", "--stdin-file-path", "{buffer_path}"]
+        }
+      },
+      "language_servers": ["typescript-ls", "!vtsls", "!eslint", "!typescript-language-server"]
+    }
+  },
+
+  "lsp": {
+    "typescript-ls": {
+      "initialization_options": {
+        "maxTsServerMemory": 1536,
+        "preferences": {
+          "enableProjectDiagnostics": false
+        },
+        "tsserver": {
+          "useSyntaxServer": "parts"
+        }
+      }
+    }
+  },
+
+  "file_scan_exclusions": ["**/.git/**", "**/node_modules/**"]
+}

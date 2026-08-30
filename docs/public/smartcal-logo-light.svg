@@ -1,0 +1,68 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="scTitleLight">
+  <title id="scTitleLight">SmartCal</title>
+
+  <defs>
+    <linearGradient id="sc-bg-l" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#eef2f9"/>
+    </linearGradient>
+
+    <linearGradient id="sc-main-l" x1="5%" y1="0%" x2="95%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+
+    <linearGradient id="sc-accent-l" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+
+    <radialGradient id="sc-shadow-l" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0f172a" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="sc-glow-l" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="sc-glow-soft-l" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle background -->
+  <rect x="0" y="0" width="120" height="120" rx="24" fill="url(#sc-bg-l)"/>
+  <rect x="1.25" y="1.25" width="117.5" height="117.5" rx="23" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Soft grounding shadow under the mark -->
+  <ellipse cx="60" cy="88" rx="34" ry="10" fill="url(#sc-shadow-l)"/>
+
+  <!-- Ambient tint behind the mark -->
+  <circle cx="60" cy="58" r="36" fill="url(#sc-main-l)" opacity="0.12" filter="url(#sc-glow-soft-l)"/>
+
+  <!-- Speed streaks -->
+  <g stroke="url(#sc-accent-l)" stroke-linecap="round">
+    <line x1="10" y1="98" x2="27" y2="81" stroke-width="4" opacity="0.55"/>
+    <line x1="8" y1="88" x2="19" y2="77" stroke-width="3" opacity="0.35"/>
+    <line x1="7" y1="79" x2="14" y2="72" stroke-width="2" opacity="0.2"/>
+  </g>
+
+  <!-- Sigma / S monogram, kinked by the JIT compile point -->
+  <g filter="url(#sc-glow-l)">
+    <path d="M34,34 L86,34 L70,54 L46,60 L86,86 L34,86"
+          fill="none" stroke="url(#sc-main-l)" stroke-width="8.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Lightning bolt fused into the compile point -->
+  <g filter="url(#sc-glow-l)">
+    <path d="M65.7,54.6 L65.7,42.7 L50.4,61.4 L62.3,61.4 L62.3,73.3 L77.6,54.6 Z"
+          fill="url(#sc-accent-l)"/>
+  </g>
+</svg>

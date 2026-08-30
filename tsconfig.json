@@ -11,5 +11,11 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": ["./exemple.ts", "./grammar", "dist/docs", "./dist", "node_modules"]
+  "exclude": [
+    "./examples.ts",
+    "./grammar",
+    "dist/docs",
+    "./dist",
+    "node_modules"
+  ]
 }

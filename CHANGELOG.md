@@ -5,6 +5,18 @@ All notable changes to SmartCal will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/nXhermane/smartcal/compare/v1.0.14...v1.1.0) (2026-08-30)
+
+
+### Features
+
+* engine rewrite with modernized tooling (v1.1) ([991d8a6](https://github.com/nXhermane/smartcal/commit/991d8a6684b188c9db89e676df155a1be254f529))
+
+
+### Bug Fixes
+
+* set VitePress base path to /smartcal/ ([01cfba2](https://github.com/nXhermane/smartcal/commit/01cfba2eddecefb34a70d87c6b3c8a761891b348))
+
 ## [1.0.11] - 2025-10-15
 
 ### Added

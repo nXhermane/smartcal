@@ -30,7 +30,7 @@
   <img src="https://img.shields.io/badge/Zero-Dependencies-22C55E?style=flat-square" alt="Zero Dependencies" />
   <img src="https://img.shields.io/badge/CSP-Safe-6366F1?style=flat-square" alt="CSP Safe" />
   <img src="https://img.shields.io/badge/License-ISC-EA580C?style=flat-square" alt="License" />
-  <img src="https://github.com/nXhermane/SmartCal/actions/workflows/ci.yml/badge.svg?style=flat-square" alt="CI" />
+  <img src="https://github.com/nXhermane/smartcal/actions/workflows/ci.yml/badge.svg?style=flat-square" alt="CI" />
 </p>
 
 ---
@@ -120,7 +120,7 @@ isValidExpression('price * ');               // false
 
 Detailed benchmarks are auto-generated and always up-to-date in the documentation:
 
-**[View Live Benchmarks &rarr;](https://nxhermane.github.io/SmartCal/internals/benchmarks)**
+**[View Live Benchmarks &rarr;](https://nxhermane.github.io/smartcal/internals/benchmarks)**
 
 Quick highlights (JIT Mode):
 
@@ -211,7 +211,7 @@ console.log(hypotenuse.evaluate({ a: 3, b: 4 })); // 5
 
 ## Documentation
 
-Full documentation is available at [nxhermane.github.io/SmartCal](https://nxhermane.github.io/SmartCal) (available in English and French).
+Full documentation is available at [nxhermane.github.io/smartcal](https://nxhermane.github.io/smartcal) (available in English and French).
 
 ### Operator Precedence
 
@@ -261,7 +261,7 @@ We welcome contributions!
 ### Development Setup
 
 ```bash
-git clone https://github.com/nXhermane/SmartCal.git
+git clone https://github.com/nXhermane/smartcal.git
 cd smartcal
 bun install
 ```

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nxhermane.github.io/SmartCal/sitemap.xml
+Sitemap: https://nxhermane.github.io/smartcal/sitemap.xml

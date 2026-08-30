@@ -19,7 +19,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nXhermane/SmartCal.git"
+    "url": "git+https://github.com/nXhermane/smartcal.git"
   },
   "scripts": {
     "dev": "tsup --watch",

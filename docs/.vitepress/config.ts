@@ -35,8 +35,8 @@ export default withMermaid({
       {
         text: 'v1.1.0',
         items: [
-          { text: 'Changelog', link: 'https://github.com/nXhermane/SmartCal/blob/master/CHANGELOG.md' },
-          { text: 'GitHub Repository', link: 'https://github.com/nXhermane/SmartCal' },
+          { text: 'Changelog', link: 'https://github.com/nXhermane/smartcal/blob/master/CHANGELOG.md' },
+          { text: 'GitHub Repository', link: 'https://github.com/nXhermane/smartcal' },
         ],
       },
       {
@@ -90,7 +90,7 @@ export default withMermaid({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/nXhermane/SmartCal' },
+      { icon: 'github', link: 'https://github.com/nXhermane/smartcal' },
     ],
 
     footer: {
@@ -120,8 +120,8 @@ export default withMermaid({
           {
             text: 'v1.1.0',
             items: [
-              { text: 'Changelog', link: 'https://github.com/nXhermane/SmartCal/blob/master/CHANGELOG.md' },
-              { text: 'GitHub Repository', link: 'https://github.com/nXhermane/SmartCal' },
+              { text: 'Changelog', link: 'https://github.com/nXhermane/smartcal/blob/master/CHANGELOG.md' },
+              { text: 'GitHub Repository', link: 'https://github.com/nXhermane/smartcal' },
             ],
           },
           {
@@ -175,7 +175,7 @@ export default withMermaid({
         },
 
         socialLinks: [
-          { icon: 'github', link: 'https://github.com/nXhermane/SmartCal' },
+          { icon: 'github', link: 'https://github.com/nXhermane/smartcal' },
         ],
 
         footer: {

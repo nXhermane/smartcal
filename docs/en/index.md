@@ -18,7 +18,7 @@ hero:
       link: /en/internals/benchmarks
     - theme: alt
       text: 💻 GitHub
-      link: https://github.com/nXhermane/SmartCal
+      link: https://github.com/nXhermane/smartcal
 
 features:
   - icon: ⚡

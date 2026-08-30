@@ -1,6 +1,6 @@
 {
   "name": "smartcal",
-  "version": "1.0.14",
+  "version": "2.0.0",
   "type": "module",
   "description": "Ultra-high-performance mathematical expression engine with JIT compilation (~2.5M+ ops/s), CSP-safe VM mode, Pratt parser, and zero dependencies. Evaluate dynamic formulas safely without eval().",
   "main": "./dist/index.cjs",
@@ -31,7 +31,7 @@
     "bench:save": "vitest bench --outputJson=bench/results/current.json && bun run bench:docs",
     "bench:docs": "bun run scripts/generate-bench-docs.ts",
     "bench:baseline": "vitest bench --outputJson=bench/results/baseline.json",
-     "bench:compare": "vitest bench --compare=bench/results/baseline.json",
+    "bench:compare": "vitest bench --compare=bench/results/baseline.json",
     "examples": "bun run examples.ts",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -75,6 +75,8 @@
     "vitest": "^4.1.11"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{ts,tsx}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   }
 }

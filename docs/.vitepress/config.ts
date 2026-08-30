@@ -4,7 +4,7 @@ export default withMermaid({
   title: 'SmartCal',
   description: 'Ultra High-Performance Mathematical & Logical Expression Engine for TypeScript / JavaScript',
   lang: 'fr-FR',
-  base: '/',
+  base: '/smartcal/',
   cleanUrls: true,
   lastUpdated: true,
 
@@ -95,7 +95,7 @@ export default withMermaid({
 
     footer: {
       message: 'Distribué sous licence MIT / ISC.',
-      copyright: 'Copyright © 2024-présent nXhermane & Contributeurs',
+      copyright: `Copyright © ${new Date().getFullYear()}-présent nXhermane`,
     },
 
     search: {
@@ -180,7 +180,7 @@ export default withMermaid({
 
         footer: {
           message: 'Released under MIT / ISC License.',
-          copyright: 'Copyright © 2024-present nXhermane & Contributors',
+          copyright: `Copyright © ${new Date().getFullYear()}-present nXhermane & Contributors`,
         },
 
         search: {

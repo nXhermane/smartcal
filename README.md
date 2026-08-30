@@ -136,42 +136,6 @@ Quick highlights (JIT Mode):
 
 ---
 
-## Architecture
-
-SmartCal v1.1 is built on a complete compilation pipeline: **Lexing -> Parsing -> Code Generation / Execution**.
-
-```text
-Expression String
-       |
-       v
-[Scanner] — Zero-Allocation, charCodeAt cursor
-       |
-       v
-[Pratt Parser] — O(N) linear, Binding Power precedence
-       |
-       v
-[AST] — Typed Abstract Syntax Tree
-       |
-       +---> [JIT Compiler] — new Function() -> V8 TurboFan (~2.5M+ ops/s)
-       |
-       +---> [Fast VM] — CSP-Safe interpreter (~1M ops/s)
-       |
-       v
-[FormulaResolver] — Topological DAG resolution for f_* sub-formulas
-       |
-       v
-Result (Number / String)
-```
-
-### The 4 Optimization Pillars
-
-1. **Zero-Allocation Scanner** — No `.split()` or regex. Direct `charCodeAt()` cursor traversal.
-2. **Linear Pratt Parser** — Correctly handles nested ternaries and right-associative powers in a single pass.
-3. **JIT Code Generation** — AST translated to native JS, optimized by V8 TurboFan.
-4. **Topological DAG Resolution** — Nested `f_*` formulas resolved with memoization and cycle detection.
-
----
-
 ## Advanced Usage
 
 ### Sub-Formulas & DAG (`f_*`)
@@ -251,49 +215,6 @@ compile(expression: string, options?: CompileOptions): CompiledExpression
 | `VMError` | Undefined operation in VM mode |
 | `IncorrectSyntaxError` | Legacy syntax error |
 | `InvalidFormulaError` | Empty formula |
-
----
-
-## Contributing
-
-We welcome contributions!
-
-### Development Setup
-
-```bash
-git clone https://github.com/nXhermane/smartcal.git
-cd smartcal
-bun install
-```
-
-### Scripts
-
-```bash
-bun run dev            # Watch mode for building
-bun run build          # Build library with tsup
-bun run docs:dev       # VitePress dev server
-bun run docs:build     # Build documentation
-bun test               # Run tests
-bun run test:coverage  # Run with coverage
-bun run bench          # Run benchmarks
-bun run lint           # Biome check
-bun run lint:fix       # Biome fix
-bun run check-types    # TypeScript check
-```
-
-### Commit Guidelines
-
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) enforced by commitlint:
-
-- `feat:` — New feature
-- `fix:` — Bug fix
-- `docs:` — Documentation
-- `perf:` — Performance improvement
-- `refactor:` — Code refactoring
-- `test:` — Adding tests
-- `BREAKING CHANGE:` — Major version bump
-
-Pre-commit hooks (via Husky) automatically run Biome and typecheck on staged files.
 
 ---
 

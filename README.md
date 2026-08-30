@@ -1,386 +1,310 @@
-# SmartCal
-
 <div align="center">
-
-![SmartCal Logo](https://img.shields.io/badge/SmartCal-Formula%20Engine-blue?style=for-the-badge&logo=javascript)
-[![npm version](https://img.shields.io/npm/v/smartcal.svg)](https://www.npmjs.com/package/smartcal)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Test Coverage](https://img.shields.io/badge/coverage-90.75%25-brightgreen.svg)](https://github.com/nXhermane/SmartCal)
-[![Build Status](https://github.com/nXhermane/SmartCal/actions/workflows/docs.yml/badge.svg)](https://nXhermane/actions/workflows/docs.yml)
-[![Downloads](https://img.shields.io/npm/dm/smartcal)](https://www.npmjs.com/package/smartcal)
-
-**A powerful, lightweight TypeScript library for dynamic mathematical expression evaluation**
-
-[🚀 Quick Start](#-quick-start) • [📚 Documentation](#-documentation) • [🔧 API Reference](#-api-reference) • [💡 Examples](#-examples) • [🤝 Contributing](#-contributing)
-
+  <picture align="center">
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/smartcal-logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset=".github/assets/smartcal-logo-light.svg">
+    <img alt="SmartCal Logo" src=".github/assets/smartcal-logo-light.svg" width="200" />
+  </picture>
 </div>
 
+<h1 align="center">SmartCal — Ultra High-Performance Expression Engine</h1>
+
+<p align="center">
+  <strong>Evaluate and compile mathematical & logical expressions at over 2.5 million operations per second in JavaScript and TypeScript.</strong>
+</p>
+
+<p align="center">
+  <a href="#-why-smartcal"><strong>Why SmartCal?</strong></a> ·
+  <a href="#-quick-start"><strong>Quick Start</strong></a> ·
+  <a href="#-performance"><strong>Performance</strong></a> ·
+  <a href="#-architecture"><strong>Architecture</strong></a> ·
+  <a href="#-documentation"><strong>Documentation</strong></a> ·
+  <a href="#-contributing"><strong>Contributing</strong></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/npm/v/smartcal?style=flat-square&logo=npm&logoColor=white" alt="npm version" />
+  <img src="https://img.shields.io/npm/dm/smartcal?style=flat-square&logo=npm&logoColor=white" alt="downloads" />
+  <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Bun-1.4+-000000?style=flat-square&logo=bun" alt="Bun" />
+  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Zero-Dependencies-22C55E?style=flat-square" alt="Zero Dependencies" />
+  <img src="https://img.shields.io/badge/CSP-Safe-6366F1?style=flat-square" alt="CSP Safe" />
+  <img src="https://img.shields.io/badge/License-ISC-EA580C?style=flat-square" alt="License" />
+  <img src="https://github.com/nXhermane/SmartCal/actions/workflows/ci.yml/badge.svg?style=flat-square" alt="CI" />
+</p>
+
 ---
 
-## 📋 Table of Contents
+## Why SmartCal?
 
-- [✨ Features](#-features)
-- [📦 Installation](#-installation)
-- [🚀 Quick Start](#-quick-start)
-- [📘 Advanced Usage](#-advanced-usage)
-- [📖 Documentation](#-documentation)
-- [🔧 API Reference](#-api-reference)
-- [⚠️ Important Notes](#️-important-notes)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+Most mathematical expression evaluators in JavaScript suffer from critical flaws: dangerous `eval()` usage, inefficient parsing pipelines, and absence of true compilation.
+
+**SmartCal v1.1** solves these problems with a cutting-edge compiler architecture:
+
+| Criteria | Traditional Evaluators | SmartCal Engine |
+| :--- | :--- | :--- |
+| **Security** | `eval()` — injection vulnerabilities, CSP-blocked | **Zero-eval JIT + CSP-Safe VM** |
+| **Parsing** | Shunting-Yard — struggles with nested ternaries | **Pratt Parser O(N)** — linear, unambiguous |
+| **Performance** | Re-parses text on every evaluation | **Compile once, evaluate at ~2.5M+ ops/s** |
+| **Nested Formulas** | Recursive re-parsing, exponential degradation | **Memoized topological DAG resolution** |
+| **Environment** | Requires `unsafe-eval` | **100% CSP-Safe mode available** |
 
 ---
 
-## ✨ Features
+## Quick Start
 
-- 🚀 **High Performance** - Optimized expression parsing and evaluation
-- 🔢 **Rich Operators** - Arithmetic, comparison, logical, and ternary operations
-- 📊 **Dynamic Variables** - Support for nested formulas and data binding
-- 🔄 **Compiled Expressions** - Pre-compile expressions for repeated use
-- 🌍 **Unicode Support** - Full Unicode character support in string literals
-- ✅ **Type Safety** - Full TypeScript support with type definitions
-- 🧪 **Well Tested** - 90%+ test coverage with comprehensive test suite
-- 📦 **Zero Dependencies** - Lightweight with no external dependencies
-- 🔧 **Formula Variables** - Support for complex nested formula definitions
-- 🎯 **Conditional Logic** - Advanced ternary operations and boolean handling
+### Prerequisites
 
-## 📦 Installation
+- [Bun](https://bun.sh) (>= 1.4) or [Node.js](https://nodejs.org) (>= 18)
+
+### Installation
 
 ```bash
-# npm
+bun add smartcal
+# or
 npm install smartcal
-
-# yarn
-yarn add smartcal
-
-# pnpm
-pnpm add smartcal
 ```
-
-### Requirements
-
-- **Node.js**: >= 14.0.0
-- **TypeScript**: >= 4.0.0 (for TypeScript projects)
-
-## 🚀 Quick Start
 
 ### Basic Evaluation
 
 ```typescript
-import SmartCal from "smartcal";
+import SmartCal from 'smartcal';
 
-// 🔢 Basic arithmetic operations
-console.log(SmartCal("2 + 3 * 4"));     // 14 (respects operator precedence)
-console.log(SmartCal("2 ^ 3"));         // 8 (exponentiation)
-console.log(SmartCal("10 % 3"));        // 1 (modulo)
+// Arithmetic with operator precedence
+console.log(SmartCal('2 + 3 * 4'));           // 14
+console.log(SmartCal('2 ^ 3 ^ 2'));           // 512 (right-associative)
 
-// 📊 With variables and data binding
-const userData = { age: 25, weight: 70, height: 1.75 };
-console.log(SmartCal("age + 5", userData));              // 30
-console.log(SmartCal("weight / (height ^ 2)", userData)); // 22.86 (BMI calculation)
+// With variables
+const bmi = SmartCal('weight / (height ^ 2)', { weight: 70, height: 1.75 }); // 22.86
 
-// 🎯 Conditional expressions with Unicode support
-const studentData = { score: 85, name: "José María" };
-console.log(SmartCal(`score >= 80 ? "A" : "B"`, studentData)); // "A"
-console.log(SmartCal(`"Student: ${name}"`, studentData));       // "Student: José María"
+// Ternary expressions
+console.log(SmartCal('score >= 80 ? "A" : "B"', { score: 85 })); // "A"
 
-// 🌍 Unicode string literals fully supported
-console.log(SmartCal('"café"'));           // "café"
-console.log(SmartCal('"北京"'));           // "北京"
-console.log(SmartCal('"naïve"'));          // "naïve"
+// Unicode support
+console.log(SmartCal('café + quantité', { café: 2.5, quantité: 4 })); // 6.5
 ```
 
-## 📘 Advanced Usage
-
-### 🔍 Expression Validation
+### High-Performance Precompiled Evaluation
 
 ```typescript
-import { isValidExpression } from "smartcal";
+import { compile } from 'smartcal';
 
-// ✅ Valid expressions return true
-console.log(isValidExpression("2 + 2"));                    // true
-console.log(isValidExpression("x > 10 ? 'high' : 'low'"));  // true
-console.log(isValidExpression("(a + b) * c"));             // true
-console.log(isValidExpression('"Unicode: naïve"'));        // true ✨
+// Compile once
+const taxCalc = compile('income > 50000 ? (income - 50000) * 0.30 + 5000 : income * 0.10');
 
-// ❌ Invalid expressions return false
-console.log(isValidExpression("2 +"));                     // false - incomplete expression
-console.log(isValidExpression("x > ? 1 : 0"));             // false - malformed ternary
-console.log(isValidExpression("(a + b * c"));              // false - unmatched parentheses
+// Evaluate many times (~2.5M+ ops/s)
+console.log(taxCalc.evaluate({ income: 75000 })); // 12500
+console.log(taxCalc.evaluate({ income: 30000 })); // 3000
 ```
 
-### Compiled Expressions
+### Execution Modes
 
 ```typescript
-import { compile } from "smartcal";
-
-// Create a reusable compiled expression
-const priceCalculator = compile("quantity * unitPrice * (1 - discount)");
-
-// Use it multiple times with different data
-console.log(priceCalculator.evaluate({
-    quantity: 5,
-    unitPrice: 10,
-    discount: 0.1
-})); // 45
-
-console.log(priceCalculator.evaluate({
-    quantity: 3,
-    unitPrice: 15,
-    discount: 0.2
-})); // 36
-
-// Compile complex formulas
-const taxCalculator = compile(`
-    subtotal > 1000 
-        ? (subtotal * (1 + taxRate) * 0.95)
-        : (subtotal * (1 + taxRate))
-`);
-
-console.log(taxCalculator.evaluate({
-    subtotal: 1500,
-    taxRate: 0.2
-})); // 1710 (includes 5% discount)
-
-// Get the original expression
-console.log(taxCalculator.toString()); // prints the original formula
-
-
-// Chain multiple compilations
-const discountCalculator = compile("price >= 100 ? (discount * 2) : discount");
-const finalPrice = compile(`basePrice * (1 - discountCalculator)`);
-
-console.log(finalPrice.evaluate({
-    basePrice: 120,
-    price: 120,
-    discount: 0.1,
-    discountCalculator
-})); // 96 (120 * (1 - 0.2))
+const jit = compile('price * quantity', { mode: 'jit' });   // Maximum performance
+const vm  = compile('price * quantity', { mode: 'vm' });    // CSP-safe
+const auto = compile('price * quantity', { mode: 'auto' }); // Adaptive
 ```
 
-### Working with Formula Variables
+### Expression Validation
 
 ```typescript
-import SmartCal,{ConditionResult} from "smartcal";
+import { isValidExpression } from 'smartcal';
 
-const data = {
-    basePrice: 100,
-    quantity: 5,
-    f_subtotal: "basePrice * quantity",
-    f_discount: "f_subtotal >= 500 ? 0.1 : 0.05",
-    f_final: "f_subtotal * (1 - f_discount)"
-};
-
-// Evaluate nested formulas
-console.log(SmartCal("f_final", data)); // 450 (500 * 0.9)
-
-// Complex conditional formulas
-const orderData = {
-   items: 3,
-   unitPrice: 40,
-   isPremium: ConditionResult.True,
-   f_baseTotal: "items * unitPrice",
-   f_discount: "isPremium ? 0.15 : (f_baseTotal > 100 ? 0.1 : 0)",
-   f_shipping: "f_baseTotal > 200 ? 0 : 10",
-   f_grandTotal: "f_baseTotal * (1 - f_discount) + f_shipping"
-};
-
-console.log(SmartCal("f_grandTotal", orderData)); // 112 (120 * 0.85 + 10)
+isValidExpression('price * (1 - discount)'); // true
+isValidExpression('price * ');               // false
 ```
 
-## 📖 Documentation
+---
 
-### Supported Operators
+## Performance
 
-| Category | Operators | Description |
-|----------|-----------|-------------|
-| **Arithmetic** | `+`, `-`, `*`, `/`, `^`, `%` | Basic math operations |
-| **Comparison** | `>`, `<`, `>=`, `<=`, `==`, `!=` | Value comparisons |
-| **Logical** | `&&`, `\|\|` | Boolean operations |
-| **Ternary** | `?`, `:` | Conditional expressions |
-| **Grouping** | `(`, `)` | Expression precedence |
+Detailed benchmarks are auto-generated and always up-to-date in the documentation:
+
+**[View Live Benchmarks &rarr;](https://nxhermane.github.io/SmartCal/internals/benchmarks)**
+
+Quick highlights (JIT Mode):
+
+| Scenario | Throughput | Latency |
+| :--- | :--- | :--- |
+| **Simple Arithmetic** | **~2.4M ops/s** | ~0.4 µs |
+| **Nested Ternaries** | **~1.1M ops/s** | ~0.9 µs |
+| **Boolean Logic XXL** | **~900K ops/s** | ~1.1 µs |
+| **Polynomial (11 Variables)** | **~280K ops/s** | ~3.5 µs |
+
+> [!TIP]
+> Run benchmarks locally: `bun run bench`
+
+---
+
+## Architecture
+
+SmartCal v1.1 is built on a complete compilation pipeline: **Lexing -> Parsing -> Code Generation / Execution**.
+
+```text
+Expression String
+       |
+       v
+[Scanner] — Zero-Allocation, charCodeAt cursor
+       |
+       v
+[Pratt Parser] — O(N) linear, Binding Power precedence
+       |
+       v
+[AST] — Typed Abstract Syntax Tree
+       |
+       +---> [JIT Compiler] — new Function() -> V8 TurboFan (~2.5M+ ops/s)
+       |
+       +---> [Fast VM] — CSP-Safe interpreter (~1M ops/s)
+       |
+       v
+[FormulaResolver] — Topological DAG resolution for f_* sub-formulas
+       |
+       v
+Result (Number / String)
+```
+
+### The 4 Optimization Pillars
+
+1. **Zero-Allocation Scanner** — No `.split()` or regex. Direct `charCodeAt()` cursor traversal.
+2. **Linear Pratt Parser** — Correctly handles nested ternaries and right-associative powers in a single pass.
+3. **JIT Code Generation** — AST translated to native JS, optimized by V8 TurboFan.
+4. **Topological DAG Resolution** — Nested `f_*` formulas resolved with memoization and cycle detection.
+
+---
+
+## Advanced Usage
+
+### Sub-Formulas & DAG (`f_*`)
+
+```typescript
+import SmartCal, { compile } from 'smartcal';
+
+const f_subtotal = compile('price * quantity * (1 - discount)');
+const f_tax = compile('f_subtotal * taxRate');
+const f_total = compile('f_subtotal + f_tax + shipping');
+
+console.log(f_total.evaluate({
+  price: 50, quantity: 2, discount: 0.10,
+  taxRate: 0.20, shipping: 5,
+  f_subtotal, f_tax,
+})); // 113
+```
+
+### Custom Functions
+
+```typescript
+import { FunctionRegistry, compile } from 'smartcal';
+
+FunctionRegistry.register('clamp', (val, min, max) =>
+  Math.min(Math.max(val, min), max)
+);
+
+const speedLimit = compile('clamp(speed, 0, 130)');
+console.log(speedLimit.evaluate({ speed: 150 })); // 130
+
+// Built-in: abs, sqrt, round, floor, ceil, min, max, sin, cos, tan, log, exp
+const hypotenuse = compile('sqrt(a ^ 2 + b ^ 2)');
+console.log(hypotenuse.evaluate({ a: 3, b: 4 })); // 5
+```
+
+---
+
+## Documentation
+
+Full documentation is available at [nxhermane.github.io/SmartCal](https://nxhermane.github.io/SmartCal) (available in English and French).
 
 ### Operator Precedence
 
-1. **Parentheses**: `( )`
-2. **Exponentiation**: `^`
-3. **Multiplication/Division/Modulo**: `*`, `/`, `%`
-4. **Addition/Subtraction**: `+`, `-`
-5. **Comparisons**: `>`, `<`, `>=`, `<=`, `==`, `!=`
-6. **Logical AND**: `&&`
-7. **Logical OR**: `\|\|`
-8. **Ternary**: `? :`
+| Priority | Operators | Description |
+|----------|-----------|-------------|
+| 1 | `( )` | Parentheses |
+| 2 | `^` | Exponentiation (right-associative) |
+| 3 | `*`, `/`, `%` | Multiplicative |
+| 4 | `+`, `-` | Additive |
+| 5 | `<`, `<=`, `>`, `>=` | Comparison |
+| 6 | `==`, `!=` | Equality |
+| 7 | `&&` | Logical AND |
+| 8 | `\|\|` | Logical OR |
+| 9 | `? :` | Ternary (right-associative) |
 
 ### API Reference
 
-#### Core Functions
-
 ```typescript
-// Simple evaluation
-SmartCal<T>(expression: string, data?: T): number | string
+// Direct evaluation
+SmartCal(expression: string, data?: DataType, options?: SmartCalOptions): number | string
 
-// Expression validation
+// Validate syntax
 isValidExpression(expression: string): boolean
 
-// Compilation for reuse
-compile(expression: string): CompiledExpression
+// Compile for reuse
+compile(expression: string, options?: CompileOptions): CompiledExpression
 ```
 
-#### Interfaces
+### Error Types
 
-```typescript
-interface CompiledExpression {
-    type: "CompiledExpression";
-    evaluate<T>(data: T): number | string;
-    toString(): string;
-}
+| Error | Description |
+|-------|-------------|
+| `ScanError` | Unknown character or unclosed string |
+| `ParseError` | Invalid token sequence |
+| `FormulaResolutionError` | Circular dependency in `f_*` formulas |
+| `JITError` | JIT compilation blocked by CSP |
+| `VMError` | Undefined operation in VM mode |
+| `IncorrectSyntaxError` | Legacy syntax error |
+| `InvalidFormulaError` | Empty formula |
 
-interface DataType {
-    [key: string]: any;
-}
-```
+---
 
-#### Constants
+## Contributing
 
-```typescript
-enum ConditionResult {
-    True = 1,
-    False = 0
-}
-```
-
-## ⚠️ Important Notes
-
-### Ternary Operators
-
-```typescript
-// Wrong
-const expression = `variable > 6 ? 0.5*anotherVariable : 0.5`
-// Correct
-const expression = `variable > 6 ? (0.5*anotherVariable) : 0.5`
-```
-
-### Boolean Variables
-
-```typescript
-const data = {
-    bool: ConditionResult.True, // 1
-    bool2: ConditionResult.False // 0
-}
-const expression = `bool ? "True" : bool2 ? "False" : "True"`
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Expression parsing errors:**
-```typescript
-// ❌ Wrong: Incomplete ternary
-SmartCal("x > 5 ? 'high'");
-
-// ✅ Correct: Complete ternary
-SmartCal("x > 5 ? 'high' : 'low'");
-```
-
-**Variable resolution:**
-```typescript
-// ❌ Wrong: Undefined variables
-SmartCal("undefinedVar + 1"); // Throws error
-
-// ✅ Correct: Provide data object
-SmartCal("definedVar + 1", { definedVar: 5 });
-```
-
-**Unicode handling:**
-```typescript
-// ✅ Unicode strings work
-SmartCal('"café"'); // "café"
-SmartCal('"北京"'); // "北京"
-```
-
-### FAQ
-
-**Q: How do I use boolean values in expressions?**
-```typescript
-import { ConditionResult } from "smartcal";
-
-const data = {
-    isActive: ConditionResult.True, // 1
-    isInactive: ConditionResult.False // 0
-};
-
-SmartCal("isActive && isInactive", data); // false
-```
-
-**Q: Can I nest compiled expressions?**
-```typescript
-const discountCalc = compile("price >= 100 ? price * 0.1 : 0");
-const finalPrice = compile("basePrice - discountCalc");
-
-finalPrice.evaluate({
-    basePrice: 120,
-    price: 120,
-    discountCalc
-}); // 108
-```
-
-**Q: How do formula variables work?**
-```typescript
-const data = {
-    f_subtotal: "quantity * price",
-    f_tax: "f_subtotal * 0.2",
-    f_total: "f_subtotal + f_tax"
-};
-
-SmartCal("f_total", data); // Evaluates nested formulas
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
+We welcome contributions!
 
 ### Development Setup
 
 ```bash
 git clone https://github.com/nXhermane/SmartCal.git
 cd smartcal
-npm install
-npm run build
-npm test
+bun install
 ```
 
-### Guidelines
-
-- Follow TypeScript best practices
-- Add tests for new features
-- Update documentation
-- Use conventional commits
-
-### Running Tests
+### Scripts
 
 ```bash
-# Run all tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Run specific test file
-npm test -- test/parser/FormulaParser.test.ts
+bun run dev            # Watch mode for building
+bun run build          # Build library with tsup
+bun run docs:dev       # VitePress dev server
+bun run docs:build     # Build documentation
+bun test               # Run tests
+bun run test:coverage  # Run with coverage
+bun run bench          # Run benchmarks
+bun run lint           # Biome check
+bun run lint:fix       # Biome fix
+bun run check-types    # TypeScript check
 ```
 
-## 📄 License
+### Commit Guidelines
 
-This project is licensed under the [MIT License](./LISENCE).
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) enforced by commitlint:
+
+- `feat:` — New feature
+- `fix:` — Bug fix
+- `docs:` — Documentation
+- `perf:` — Performance improvement
+- `refactor:` — Code refactoring
+- `test:` — Adding tests
+- `BREAKING CHANGE:` — Major version bump
+
+Pre-commit hooks (via Husky) automatically run Biome and typecheck on staged files.
 
 ---
 
+<br />
+
 <div align="center">
-
-**Made with ❤️ by the SmartCal team**
-
-[⭐ Star us on GitHub](https://github.com/nXhermane/SmartCal) • [🐛 Report Issues](https://github.com/nXhermane/SmartCal/issues) • [💬 Join Discussions](https://github.com/nXhermane/SmartCal/discussions)
-
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/smartcal-logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset=".github/assets/smartcal-logo-light.svg">
+    <img alt="SmartCal Logo" src=".github/assets/smartcal-logo-light.svg" width="64" />
+  </picture>
+  <br />
+  <em>SmartCal — Evaluate. Compile. Accelerate.</em>
 </div>

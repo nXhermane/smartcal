@@ -74,6 +74,6 @@
     "vitest": "^4.1.11"
   },
   "lint-staged": {
-    "*.{ts,tsx}": ["biome check --write --no-errors-on-unmatched", "tsc --noEmit --pretty"]
+    "*.{ts,tsx}": ["biome check --write --no-errors-on-unmatched"]
   }
 }

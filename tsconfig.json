@@ -11,5 +11,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "exclude": ["./exemple.ts", "./grammar", "dist/docs", "./dist"]
+  "exclude": ["./exemple.ts", "./grammar", "dist/docs", "./dist", "node_modules"]
 }

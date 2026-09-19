@@ -1,29 +1,11 @@
-/**
- * @file index.ts
- * @description Error classes for the SmartCal v1.1 Scanner, Parser, and Compiler.
- *
- * ## Design rationale
- *
- * These error classes are used by the modern `src/` pipeline.
- * They carry structured metadata (source string, position, token) so that
- * callers can produce IDE-quality diagnostics.
- *
- * Legacy error classes (`IncorrectSyntaxError`, `InvalidFormulaError`, etc.)
- * are also cleanly implemented and exported here to guarantee 100% backward compatibility.
- */
-
 import type { Token } from '../scanner/token';
-
-// ---------------------------------------------------------------------------
-// ScanError
-// ---------------------------------------------------------------------------
 
 /**
  * Thrown by `Scanner` when it encounters an unrecognized character or an
  * unterminated string literal.
  *
  * @example
- * // Source: "price @ 2"  →  ScanError at pos 7 for '@'
+ * // Source: "price @ 2"  ->  ScanError at pos 7 for '@'
  */
 export class ScanError extends Error {
   override readonly name = 'ScanError';
@@ -41,17 +23,13 @@ export class ScanError extends Error {
   }
 }
 
-// ---------------------------------------------------------------------------
-// ParseError
-// ---------------------------------------------------------------------------
-
 /**
  * Thrown by `Parser` when the token stream does not match the grammar.
  *
  * Carries the offending `Token` for precise error reporting.
  *
  * @example
- * // Source: "2 + * 3"  →  ParseError on token { kind: Star, value: "*", start: 4 }
+ * // Source: "2 + * 3"  ->  ParseError on token { kind: Star, value: "*", start: 4 }
  */
 export class ParseError extends Error {
   override readonly name = 'ParseError';
@@ -66,10 +44,6 @@ export class ParseError extends Error {
   }
 }
 
-// ---------------------------------------------------------------------------
-// JITError
-// ---------------------------------------------------------------------------
-
 /**
  * Thrown by `JITCompiler` when code generation fails or when `new Function`
  * is blocked by a Content Security Policy.
@@ -81,10 +55,6 @@ export class JITError extends Error {
     super(message, cause !== undefined ? { cause } : undefined);
   }
 }
-
-// ---------------------------------------------------------------------------
-// VMError
-// ---------------------------------------------------------------------------
 
 /**
  * Thrown by `VMInterpreter` when an AST node cannot be evaluated
@@ -98,17 +68,13 @@ export class VMError extends Error {
   }
 }
 
-// ---------------------------------------------------------------------------
-// FormulaResolutionError
-// ---------------------------------------------------------------------------
-
 /**
  * Thrown by `FormulaResolver` when a circular dependency is detected in
  * the `f_*` sub-formula DAG.
  *
  * @example
  * // data = { f_a: compile('f_b + 1'), f_b: compile('f_a + 1') }
- * // → FormulaResolutionError: cycle ["f_a", "f_b", "f_a"]
+ * // -> FormulaResolutionError: cycle ["f_a", "f_b", "f_a"]
  */
 export class FormulaResolutionError extends Error {
   override readonly name = 'FormulaResolutionError';
@@ -122,10 +88,6 @@ export class FormulaResolutionError extends Error {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Internal helper
-// ---------------------------------------------------------------------------
-
 function buildSnippet(source: string, pos: number): string {
   const line = source.replace(/\n/g, ' ');
   const clampedPos = Math.max(0, Math.min(pos, line.length));
@@ -133,9 +95,6 @@ function buildSnippet(source: string, pos: number): string {
   return `${line}\n${caret}`;
 }
 
-// ---------------------------------------------------------------------------
-// Legacy Error Exports
-// ---------------------------------------------------------------------------
 export {
   FormulaInterpreterError,
   FormulaVariableNotFoundError,

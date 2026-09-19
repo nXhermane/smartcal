@@ -1,6 +1,12 @@
+import type { ASTNode, BinaryNode } from '../ast/nodes';
+import { VMError } from '../errors/index';
+import { FunctionRegistry } from '../registry/function-registry';
+
+/** A plain data record - variable names -> values. */
+export type DataRecord = Record<string, unknown>;
+
 /**
- * @file vm_interpreter.ts
- * @description Fast Stack VM — CSP-safe AST evaluator for SmartCal v1.1.
+ * @description Fast Stack VM (CSP-safe AST evaluator)
  *
  * ## When to use
  *
@@ -11,21 +17,12 @@
  * - **0 uses of `eval`** or `new Function`.
  * - **0 closures allocated per evaluation** (switch/case dispatch is V8-friendly).
  * - **0 intermediate arrays** — the AST is walked in-place.
- * - Expected throughput: **~1–3 million ops/s** (still 10–50x faster than v1.0.14).
  *
  * ## Design
  *
  * A simple recursive visitor pattern with a `switch` on `node.type`.
  * TypeScript's exhaustive narrowing ensures every node type is handled.
  */
-
-import type { ASTNode, BinaryNode } from '../ast/nodes';
-import { VMError } from '../errors/index';
-import { FunctionRegistry } from '../registry/function-registry';
-
-/** A plain data record — variable names → values. */
-export type DataRecord = Record<string, unknown>;
-
 export class VMInterpreter {
   /**
    * Evaluate `ast` against `data` and return the result.
@@ -35,10 +32,6 @@ export class VMInterpreter {
   evaluate(ast: ASTNode, data: DataRecord): number | string {
     return this.visit(ast, data);
   }
-
-  // ---------------------------------------------------------------------------
-  // Core visitor
-  // ---------------------------------------------------------------------------
 
   private visit(node: ASTNode, data: DataRecord): number | string {
     switch (node.type) {
@@ -55,7 +48,7 @@ export class VMInterpreter {
         return this.visitBinary(node, data);
 
       case 'Conditional': {
-        // Evaluate test — any truthy value (including 1) takes the consequent.
+        // Evaluate test - any truthy value (including 1) takes the consequent.
         const test = this.visit(node.test, data);
         return test ? this.visit(node.consequent, data) : this.visit(node.alternate, data);
       }
@@ -86,16 +79,12 @@ export class VMInterpreter {
       }
 
       default: {
-        // Exhaustive check — TypeScript will flag missing cases at compile time.
+        // Exhaustive check - TypeScript will flag missing cases at compile time.
         const _exhaustive: never = node;
         throw new VMError(`Unsupported node type: ${(_exhaustive as ASTNode).type}`);
       }
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // Binary operator evaluation
-  // ---------------------------------------------------------------------------
 
   private visitBinary(node: BinaryNode, data: DataRecord): number | string {
     // Short-circuit logical operators before evaluating both sides.
@@ -128,7 +117,7 @@ export class VMInterpreter {
       case '^':
         return (l as number) ** (r as number);
 
-      // Comparisons — return 1 or 0 to match v1 ConditionResult.
+      // Comparisons — return 1 or 0
       case '==':
         return l === r ? 1 : 0;
       case '!=':
@@ -147,18 +136,14 @@ export class VMInterpreter {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Identifier / variable resolution
-  // ---------------------------------------------------------------------------
-
   private resolveIdentifier(name: string, data: DataRecord): number | string {
     if (name in data) {
       const val = data[name];
       if (typeof val === 'number' || typeof val === 'string') return val;
-      // null / undefined → default 0 (v1 behaviour)
+      // null / undefined -> default 0
       return 0;
     }
-    // Unknown variable defaults to 0 (consistent with v1 FieldReference behaviour).
+    // Unknown variable defaults to 0.
     // The API layer can choose to throw here if strict mode is requested.
     return 0;
   }

@@ -1,21 +1,3 @@
-/**
- * @file nodes.ts
- * @description Typed, immutable AST node definitions for SmartCal v1.1.
- *
- * Replaces the old mutable `AstNode` class (with 7 optional fields and no
- * discriminant) with a proper TypeScript discriminated union. Every node has a
- * mandatory `type` literal that allows exhaustive `switch` narrowing in the
- * compiler and VM — no runtime `instanceof` checks required.
- *
- * Future-proof nodes (FunctionCall, ArrayLiteral, MemberExpression) are
- * included from the start so the Pratt Parser and JIT can reference them
- * without a later refactor.
- */
-
-// ---------------------------------------------------------------------------
-// Leaf nodes
-// ---------------------------------------------------------------------------
-
 /** A numeric or string literal: `42`, `3.14`, `"hello"`. */
 export interface LiteralNode {
   readonly type: 'Literal';
@@ -24,16 +6,12 @@ export interface LiteralNode {
 
 /**
  * A variable reference or `f_*` sub-formula identifier.
- * Examples: `price`, `f_total`, `أسعار` (Unicode supported).
+ * Examples: `price`, `f_total` (Unicode supported).
  */
 export interface IdentifierNode {
   readonly type: 'Identifier';
   readonly name: string;
 }
-
-// ---------------------------------------------------------------------------
-// Expression nodes
-// ---------------------------------------------------------------------------
 
 /**
  * A unary prefix expression.
@@ -62,7 +40,7 @@ export interface BinaryNode {
 /**
  * A ternary conditional expression `test ? consequent : alternate`.
  * The Pratt Parser handles arbitrarily nested ternaries correctly via
- * right-associative recursion — the bug that crashed v1.0.14 is eliminated.
+ * right-associative recursion.
  */
 export interface ConditionalNode {
   readonly type: 'Conditional';
@@ -70,10 +48,6 @@ export interface ConditionalNode {
   readonly consequent: ASTNode;
   readonly alternate: ASTNode;
 }
-
-// ---------------------------------------------------------------------------
-// Future-proof nodes (parsed but not yet compiled in v1.1 scope)
-// ---------------------------------------------------------------------------
 
 /**
  * A function call: `max(a, b)`, `round(price, 2)`.
@@ -106,10 +80,6 @@ export interface MemberExpressionNode {
   readonly computed: boolean;
 }
 
-// ---------------------------------------------------------------------------
-// Top-level union
-// ---------------------------------------------------------------------------
-
 /**
  * The complete set of AST node types recognized by the SmartCal engine.
  *
@@ -125,10 +95,6 @@ export type ASTNode =
   | FunctionCallNode
   | ArrayLiteralNode
   | MemberExpressionNode;
-
-// ---------------------------------------------------------------------------
-// Type guards (convenience helpers for the JIT / VM)
-// ---------------------------------------------------------------------------
 
 export const isLiteral = (n: ASTNode): n is LiteralNode => n.type === 'Literal';
 export const isIdentifier = (n: ASTNode): n is IdentifierNode => n.type === 'Identifier';

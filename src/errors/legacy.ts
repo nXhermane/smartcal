@@ -1,11 +1,7 @@
 /**
- * @file legacy.ts
- * @description Legacy error classes reimplemented in src/ for 100% backward compatibility.
- */
-
-/**
  * Thrown when an expression has incorrect syntax.
- * Reimplemented for backward compatibility with v1.
+ * Reimplemented for backward compatibility with v1.0.14.
+ * @deprecated
  */
 export class IncorrectSyntaxError extends Error {
   override readonly name = 'IncorrectSyntaxError';
@@ -23,7 +19,8 @@ export class IncorrectSyntaxError extends Error {
 
 /**
  * Thrown when a formula expression is empty or invalid.
- * Reimplemented for backward compatibility with v1.
+ * Reimplemented for backward compatibility with v1.0.14.
+ * @deprecated
  */
 export class InvalidFormulaError extends Error {
   override readonly name = 'Invalid formula';
@@ -41,7 +38,8 @@ export class InvalidFormulaError extends Error {
 
 /**
  * Thrown when an error occurs during formula interpretation.
- * Reimplemented for backward compatibility with v1.
+ * Reimplemented for backward compatibility with v1.0.14.
+ * @deprecated
  */
 export class FormulaInterpreterError extends Error {
   override readonly name = 'FormulaInterpreterError';
@@ -59,7 +57,8 @@ export class FormulaInterpreterError extends Error {
 
 /**
  * Thrown when a required variable is missing from the data container.
- * Reimplemented for backward compatibility with v1.
+ * Reimplemented for backward compatibility with v1.0.14.
+ * @deprecated
  */
 export class FormulaVariableNotFoundError extends Error {
   override readonly name = 'FormulaVariableNotFound';

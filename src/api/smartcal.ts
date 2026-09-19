@@ -1,14 +1,3 @@
-/**
- * @file smartcal.ts
- * @description SmartCal v1.1 implementation of the default SmartCal() function.
- *
- * Signature is 100% backward compatible with v1.
- * Each call: parse → resolve f_* → JIT/VM evaluate.
- *
- * For repeated evaluations of the same expression, use `compile()` instead —
- * it amortizes the parse cost over multiple calls.
- */
-
 import type { ASTNode } from '../ast/nodes';
 import { createExecutor, type ExecMode } from '../compiler/execution-strategy';
 import { IncorrectSyntaxError, InvalidFormulaError, ParseError, ScanError } from '../errors/index';
@@ -17,12 +6,6 @@ import { FormulaResolver, type RawData } from '../resolver/formula-resolver';
 import type { DataType } from '../types';
 
 export interface SmartCalOptions {
-  /**
-   * Execution mode:
-   * - `'auto'` (default) — JIT if available, else VM.
-   * - `'jit'`  — force JIT (`new Function`).
-   * - `'vm'`   — force VM (CSP-safe).
-   */
   mode?: ExecMode;
 }
 
@@ -35,8 +18,8 @@ export interface SmartCalOptions {
  * @param options     Execution options (mode: 'auto' | 'jit' | 'vm').
  * @returns           The result of the expression as a `number` or `string`.
  *
- * @throws {IncorrectSyntaxError} For backward compatibility — wraps scan/parse errors.
- * @throws {InvalidFormulaError}  For backward compatibility — wraps empty input.
+ * @throws {IncorrectSyntaxError} For backward compatibility - wraps scan/parse errors.
+ * @throws {InvalidFormulaError}  For backward compatibility - wraps empty input.
  *
  * @example
  * SmartCal('price * (1 - discount)', { price: 100, discount: 0.2 }); // 80
@@ -46,7 +29,7 @@ export default function SmartCal(
   data: DataType = {},
   options: SmartCalOptions = {},
 ): number | string {
-  // Guard: empty expression — same error as v1.
+  // Guard: empty expression - same error as v1.0.14.
   if (!expression || expression.trim().length === 0) {
     throw new InvalidFormulaError('Expression cannot be empty.', expression ?? '');
   }
@@ -55,7 +38,7 @@ export default function SmartCal(
   try {
     ast = parse(expression);
   } catch (err) {
-    // Map new ScanError / ParseError → legacy IncorrectSyntaxError so that
+    // Map new ScanError / ParseError -> legacy IncorrectSyntaxError so that
     // existing catch blocks in consumer code continue to work.
     if (err instanceof ScanError || err instanceof ParseError) {
       throw new IncorrectSyntaxError(

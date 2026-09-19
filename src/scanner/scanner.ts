@@ -1,28 +1,3 @@
-/**
- * @file Scanner.ts
- * @description Zero-Allocation Single-Pass Scanner for SmartCal v1.1.
- *
- * ## Design goals (from AUDIT_AND_MODERNIZATION_PLAN.md §4.1)
- *
- * - **Single pass, cursor-based**: no regex `replace`, no `split(" ")`, no
- *   intermediate string arrays.
- * - **Zero heap allocation between `next()` calls**: whitespace is skipped by
- *   advancing an integer cursor; multi-char operators are detected via
- *   `charCodeAt` comparisons.
- * - **Unicode identifiers**: supports U+0080–U+FFFF in variable names
- *   (e.g. Arabic, CJK, accented Latin) as required by the v1.0.14 feature set.
- * - **String literals with spaces**: `"John Doe"` is treated as a single token —
- *   the critical bug in `FormulaTokenizer.split(" ")` is eliminated.
- * - **Peek / next / expect API**: the Pratt Parser only needs these three
- *   operations; the Scanner exposes nothing else.
- *
- * ## Performance notes
- *
- * The Scanner internally maintains a single-token lookahead cache so that
- * `peek()` is O(1) and never re-scans. `next()` advances the cache.
- * All comparisons use `charCodeAt()` which V8 can inline as a raw memory read.
- */
-
 import { ScanError } from '../errors/index';
 import { EOF_TOKEN, type Token, TokenKind } from './token';
 
@@ -36,10 +11,6 @@ export class Scanner {
   constructor(private readonly src: string) {
     this.len = src.length;
   }
-
-  // ---------------------------------------------------------------------------
-  // Public API
-  // ---------------------------------------------------------------------------
 
   /**
    * Look at the next token without consuming it.
@@ -94,10 +65,6 @@ export class Scanner {
     return tokens;
   }
 
-  // ---------------------------------------------------------------------------
-  // Core scanning logic
-  // ---------------------------------------------------------------------------
-
   private _scan(): Token {
     // Skip whitespace (charCode <= 32 covers space, tab, CR, LF)
     while (this.pos < this.len && this.src.charCodeAt(this.pos) <= 32) {
@@ -111,30 +78,22 @@ export class Scanner {
     const start = this.pos;
     const ch = this.src.charCodeAt(this.pos);
 
-    // ------------------------------------------------------------------
     // 1. Numbers: [0-9] (\.[0-9]+)?
-    // ------------------------------------------------------------------
     if (ch >= 48 && ch <= 57) {
       return this._scanNumber(start);
     }
 
-    // ------------------------------------------------------------------
     // 2. String literals: "..." or '...'
-    // ------------------------------------------------------------------
     if (ch === 34 /* " */ || ch === 39 /* ' */) {
       return this._scanString(start, ch);
     }
 
-    // ------------------------------------------------------------------
     // 3. Identifiers: [A-Za-z_\u0080-\uFFFF][A-Za-z0-9_\u0080-\uFFFF]*
-    // ------------------------------------------------------------------
     if (this._isIdentStart(ch)) {
       return this._scanIdentifier(start);
     }
 
-    // ------------------------------------------------------------------
     // 4. Two-character operators: <=, >=, ==, !=, &&, ||
-    // ------------------------------------------------------------------
     if (this.pos + 1 < this.len) {
       const next = this.src.charCodeAt(this.pos + 1);
       const twoChar = this._twoCharOp(ch, next);
@@ -145,9 +104,7 @@ export class Scanner {
       }
     }
 
-    // ------------------------------------------------------------------
     // 5. Single-character operators, parentheses, punctuation
-    // ------------------------------------------------------------------
     this.pos++;
     const kind = this._singleCharOp(ch);
     if (kind === TokenKind.EOF) {
@@ -159,10 +116,6 @@ export class Scanner {
     }
     return { kind, value: this.src.charAt(start), start };
   }
-
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
 
   private _scanNumber(start: number): Token {
     while (this.pos < this.len) {

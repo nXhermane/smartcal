@@ -1,40 +1,3 @@
-/**
- * @file Parser.ts
- * @description Pratt Parser (Top-Down Operator Precedence) for SmartCal v1.1.
- *
- * ## Algorithm overview (THEORY_COMPILERS_AND_PARSING.md §3)
- *
- * The Pratt Parser replaces the 6-to-7-pass pipeline of v1.0.14
- * (Tokenize → check parentheses → check operators → check ternary →
- *  Shunting-Yard → RPN → AST) with a **single recursive descent**.
- *
- * Core concepts:
- * - **NUD** ("Null Denotation"): how a token behaves in *prefix* position
- *   (start of an expression).  E.g. a number, a variable, a unary `-`, `(`.
- * - **LED** ("Left Denotation"): how a token behaves in *infix/postfix*
- *   position (after a left operand has already been parsed).  E.g. `+`, `*`,
- *   `?`, `(` for a function call.
- * - **Binding Power (BP)**: numeric "strength" of each operator.  The main
- *   loop keeps consuming operators as long as the next one's BP > current BP.
- *
- * ## Key correctness fix over v1.0.14
- *
- * The old `checkTernaryConditionSyntax` used a naive boolean flag that was
- * toggled for every `?` and `:`.  This caused a crash on any nested ternary:
- *   `age < 18 ? 0 : (age < 25 ? 15 : 30)`  →  IncorrectSyntaxError.
- *
- * The Pratt Parser handles ternaries via right-associative recursion: when it
- * sees `?` it parses the consequent with `minBP = 0`, then expects `:`, then
- * parses the alternate with `minBP = BP[?] - 1`.  Arbitrarily deep nesting
- * works naturally.
- *
- * ## Single responsibility
- *
- * The `Parser` class only produces an `ASTNode` tree from a `Scanner`.  It
- * does **not** evaluate expressions, resolve variables, or generate code — that
- * is the job of the JIT Compiler / Fast VM (Étape 3).
- */
-
 import type { ASTNode } from '../ast/nodes';
 import { ParseError } from '../errors/index';
 import { Scanner } from '../scanner/scanner';
@@ -47,10 +10,6 @@ export class Parser {
   constructor(source: string) {
     this.scanner = new Scanner(source);
   }
-
-  // ---------------------------------------------------------------------------
-  // Public entry point
-  // ---------------------------------------------------------------------------
 
   /**
    * Parse the full source expression and return the root `ASTNode`.
@@ -69,15 +28,11 @@ export class Parser {
     return node;
   }
 
-  // ---------------------------------------------------------------------------
-  // Core Pratt loop
-  // ---------------------------------------------------------------------------
-
   /**
    * Parse an expression whose operators must have a binding power strictly
    * greater than `minBP`.
    *
-   * This is the fundamental Pratt loop described in THEORY_COMPILERS_AND_PARSING.md §3.1:
+   * This is the fundamental Pratt loop:
    * ```
    * let left = nud(next())
    * while (minBP < BP[peek()]) { left = led(next(), left) }
@@ -96,10 +51,9 @@ export class Parser {
     return left;
   }
 
-  // ---------------------------------------------------------------------------
-  // NUD — Null Denotation (prefix position)
-  // ---------------------------------------------------------------------------
-
+  /**
+   * NUD - Null Denotation (prefix position)
+   */
   private nud(token: Token): ASTNode {
     switch (token.kind) {
       // Literals
@@ -145,15 +99,12 @@ export class Parser {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // LED — Left Denotation (infix / postfix position)
-  // ---------------------------------------------------------------------------
-
+  /**
+   * LED - Left Denotation (infix / postfix position)
+   */
   private led(op: Token, left: ASTNode): ASTNode {
     switch (op.kind) {
-      // ------------------------------------------------------------------
       // Standard left-associative binary operators
-      // ------------------------------------------------------------------
       case TokenKind.Plus:
       case TokenKind.Minus:
       case TokenKind.Star:
@@ -177,9 +128,7 @@ export class Parser {
         };
       }
 
-      // ------------------------------------------------------------------
       // Exponentiation: right-associative
-      // ------------------------------------------------------------------
       case TokenKind.Caret: {
         const bp = getInfixBP(op.kind);
         // Pass bp - 1 so that `2 ^ 3 ^ 4` parses as `2 ^ (3 ^ 4)`.
@@ -187,9 +136,7 @@ export class Parser {
         return { type: 'Binary', op: '^', left, right };
       }
 
-      // ------------------------------------------------------------------
       // Ternary conditional: test ? consequent : alternate
-      // ------------------------------------------------------------------
       case TokenKind.Question: {
         // Parse the consequent with minBP = 0 (all operators are allowed)
         const consequent = this.parseExpression(0);
@@ -204,7 +151,6 @@ export class Parser {
         this.scanner.next(); // consume ':'
         // Parse the alternate right-associatively:
         // BP[?] - 1 allows another `?` to appear inside the alternate branch.
-        // This is what fixes the v1.0.14 crash on nested ternaries.
         const ternaryBP = getInfixBP(TokenKind.Question);
         const alternate = this.parseExpression(ternaryBP - 1);
         return {
@@ -215,9 +161,7 @@ export class Parser {
         };
       }
 
-      // ------------------------------------------------------------------
       // Function call: identifier(arg1, arg2, ...)
-      // ------------------------------------------------------------------
       case TokenKind.LParen: {
         if (left.type !== 'Identifier') {
           throw new ParseError(`Cannot call non-identifier expression`, op);
@@ -226,18 +170,14 @@ export class Parser {
         return { type: 'FunctionCall', name: left.name, args };
       }
 
-      // ------------------------------------------------------------------
       // Index access: obj[expr]
-      // ------------------------------------------------------------------
       case TokenKind.LBracket: {
         const property = this.parseExpression(0);
         this.scanner.expect(TokenKind.RBracket);
         return { type: 'MemberExpression', object: left, property, computed: true };
       }
 
-      // ------------------------------------------------------------------
       // Dot member access: obj.prop
-      // ------------------------------------------------------------------
       case TokenKind.Dot: {
         const propToken = this.scanner.next();
         if (propToken.kind !== TokenKind.Identifier) {
@@ -254,10 +194,6 @@ export class Parser {
         throw new ParseError(`Unexpected infix operator "${op.value}"`, op);
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
 
   /** Parse a comma-separated argument list up to the closing `)`. */
   private parseArgList(): ASTNode[] {
@@ -280,7 +216,7 @@ export class Parser {
     return args;
   }
 
-  /** Parse an array literal `[expr, expr, ...]` — opening `[` already consumed. */
+  /** Parse an array literal `[expr, expr, ...]` (opening `[` already consumed). */
   private parseArrayLiteral(): ASTNode {
     const elements: ASTNode[] = [];
 
@@ -300,10 +236,6 @@ export class Parser {
     return { type: 'ArrayLiteral', elements };
   }
 }
-
-// ---------------------------------------------------------------------------
-// Convenience factory
-// ---------------------------------------------------------------------------
 
 /**
  * Parse `source` into an `ASTNode`.  Shorthand for `new Parser(source).parse()`.

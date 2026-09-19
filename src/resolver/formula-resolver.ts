@@ -1,41 +1,18 @@
-/**
- * @file formula_resolver.ts
- * @description Memoized f_* sub-formula resolver for SmartCal v1.1.
- *
- * ## Problem it solves (AUDIT_AND_MODERNIZATION_PLAN.md §3.2)
- *
- * In v1.0.14, `DataType` allows values to be `CompiledExpression` objects
- * (the `f_*` pattern). The legacy interpreter resolved these recursively
- * on every evaluation call — with no caching. A cascade of 8 sub-formulas
- * degraded performance to **4 772 ops/s**.
- *
- * ## Solution
- *
- * `FormulaResolver.resolve()` performs a **single topological traversal**:
- * 1. Detect all `f_*` keys in `data` whose values are `CompiledExpression`.
- * 2. Build a dependency graph (which f_x needs f_y).
- * 3. Evaluate in topological order, caching each result.
- * 4. Return a flat `Record<string, number | string>` that can be passed
- *    directly to the JIT compiled fn or the VM interpreter.
- *
- * Cycle detection raises a `FormulaResolutionError` with the cycle path.
- */
-
 import { FormulaResolutionError } from '../errors/index';
 import type { CompiledExpression } from '../types';
 
 /** A data object that may contain CompiledExpression sub-formulas. */
 export type RawData = Record<string, number | string | CompiledExpression>;
 
-/** A flat data object suitable for passing to JIT/VM — no nested formulas. */
+/** A flat data object suitable for passing to JIT/VM - no nested formulas. */
 export type ResolvedData = Record<string, number | string>;
 
 /**
  * Resolves all `CompiledExpression` entries in `data` into concrete values,
  * producing a flat `ResolvedData` object.
  *
- * The resolver is **stateless** — call it once per `evaluate()` invocation.
- * AST caching happens inside `CompiledExpression.evaluate()` (v1 contract).
+ * The resolver is **stateless** - call it once per `evaluate()` invocation.
+ * AST caching happens inside `CompiledExpression.evaluate()`.
  */
 export class FormulaResolver {
   /**
@@ -55,7 +32,7 @@ export class FormulaResolver {
     const keys = Object.keys(data);
 
     function resolveKey(key: string): number | string {
-      // Already resolved — return cached value.
+      // Already resolved - return cached value.
       if (done.has(key)) return result[key] as number | string;
 
       // Cycle detected.
@@ -68,14 +45,14 @@ export class FormulaResolver {
 
       const val = data[key];
 
-      // Primitive — no resolution needed.
+      // Primitive - no resolution needed.
       if (typeof val === 'number' || typeof val === 'string') {
         result[key] = val;
         done.add(key);
         return val;
       }
 
-      // CompiledExpression — evaluate with currently resolved data.
+      // CompiledExpression - evaluate with currently resolved data.
       inProgress.add(key);
 
       // Build a partial snapshot of already-resolved values for this evaluation.

@@ -1,21 +1,10 @@
-/**
- * @file function_registry.ts
- * @description Centralized registry of mathematical functions for SmartCal v1.1.
- *
- * Used by both the JIT Compiler (which inlines builtins directly as `Math.xxx`)
- * and the Fast VM (which calls functions by reference at eval time).
- *
- * Built-in functions mirror the standard `Math` object.
- * Custom functions can be registered at runtime via `register()`.
- */
-
 /** Signature for any function usable in a SmartCal expression. */
 export type MathFn = (...args: Array<number | string>) => number | string;
 
 /**
  * Centralised registry for mathematical functions.
  *
- * - `builtins` is a frozen Map — immutable after module initialisation.
+ * - `builtins` is a frozen Map - immutable after module initialisation.
  * - `customs` is a mutable Map for user-registered functions.
  * - Lookup order: customs first, builtins second (allows overriding builtins).
  */
@@ -65,7 +54,7 @@ export class FunctionRegistry {
   /**
    * Register a custom function.
    * Overwrites any existing custom function with the same name.
-   * Cannot override a builtin — throws `RangeError` to prevent accidents.
+   * Cannot override a builtin - throws `RangeError` to prevent accidents.
    *
    * @param name   Case-insensitive function name.
    * @param fn     The implementation.

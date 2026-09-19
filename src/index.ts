@@ -1,10 +1,3 @@
-/**
- * @file index.ts
- * @description Public exports for the SmartCal v1.1 core engine (src/).
- *
- * This barrel file exposes the new Scanner + Pratt Parser + JIT/VM pipeline.
- */
-
 export { type CompileOptions, compile } from './api/compile';
 export { isValidExpression } from './api/is-valid-expression';
 

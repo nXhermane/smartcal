@@ -1,11 +1,5 @@
 /**
- * @file index.ts
- * @description Core types and contracts for SmartCal v1.1.
- */
-
-/**
  * Represents the interface for pre-compiled formula expressions.
- * Compatible with v1 contract for seamless backward compatibility.
  */
 export interface CompiledExpression {
   /** Type identifier for the compiled expression */

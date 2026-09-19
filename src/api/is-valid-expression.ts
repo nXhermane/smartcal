@@ -1,13 +1,3 @@
-/**
- * @file is_valid_expression.ts
- * @description SmartCal v1.1 implementation of isValidExpression().
- *
- * Uses the Pratt Parser to validate expressions without evaluation.
- * Replaces the v1 approach that depended on the Shunting-Yard pipeline.
- *
- * Signature is 100% backward compatible with the v1 export.
- */
-
 import { parse } from '../parser/parser';
 
 /**

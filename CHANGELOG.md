@@ -5,6 +5,13 @@ All notable changes to SmartCal will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/nXhermane/smartcal/compare/v1.1.0...v1.1.1) (2026-09-19)
+
+
+### Bug Fixes
+
+* **compiler:** inject FunctionRegistry into JIT evaluation closure ([#26](https://github.com/nXhermane/smartcal/issues/26)) ([8f96275](https://github.com/nXhermane/smartcal/commit/8f962759b83152641e9f6e07ebe2c749b48cc025))
+
 ## [1.1.0](https://github.com/nXhermane/smartcal/compare/v1.0.14...v1.1.0) (2026-08-30)
 
 

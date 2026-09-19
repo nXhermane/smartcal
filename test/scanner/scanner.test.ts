@@ -1,23 +1,9 @@
-/**
- * @file scanner.test.ts
- * @description Unit tests for the SmartCal v1.1 Zero-Allocation Scanner.
- *
- * Coverage goals:
- * - All token kinds (numbers, strings, identifiers, every operator)
- * - Multi-character operators (<=, >=, ==, !=, &&, ||)
- * - Unicode identifiers (U+0080+)
- * - String literals with embedded spaces ("John Doe") — the v1 split bug
- * - Whitespace skipping
- * - peek() / next() / expect() contract
- * - Error: unterminated strings, unrecognised characters
- */
-
 import { describe, expect, it } from 'vitest';
 import { ScanError } from '../../src/errors/index';
 import { Scanner } from '../../src/scanner/scanner';
 import { TokenKind } from '../../src/scanner/token';
 
-// Helper: fully tokenize a source string into an array of token kinds
+/** Fully tokenize a source string into an array of token kinds */
 function tokenKinds(src: string): TokenKind[] {
   const s = new Scanner(src);
   const kinds: TokenKind[] = [];
@@ -29,7 +15,7 @@ function tokenKinds(src: string): TokenKind[] {
   return kinds;
 }
 
-// Helper: fully tokenize a source string into an array of [kind, value] pairs
+/** Fully tokenize a source string into an array of [kind, value] pairs */
 function tokens(src: string): Array<{ kind: TokenKind; value: string | number }> {
   const s = new Scanner(src);
   const result: Array<{ kind: TokenKind; value: string | number }> = [];
@@ -42,7 +28,7 @@ function tokens(src: string): Array<{ kind: TokenKind; value: string | number }>
 }
 
 /**
- * Type-safe array accessor — throws a descriptive error instead of silently
+ * Type-safe array accessor - throws a descriptive error instead of silently
  * returning undefined. Avoids both `!` (noNonNullAssertion) and the
  * `noUncheckedIndexedAccess` issue caused by `arr[n]`.
  */
@@ -54,8 +40,7 @@ function at<T>(arr: T[], index: number): T {
   return item;
 }
 
-// =============================================================================
-describe('Scanner — numbers', () => {
+describe('Scanner : numbers', () => {
   it('scans an integer', () => {
     const t = tokens('42');
     expect(at(t, 0)).toEqual({ kind: TokenKind.Number, value: 42 });
@@ -77,8 +62,7 @@ describe('Scanner — numbers', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — string literals', () => {
+describe('Scanner : string literals', () => {
   it('scans a double-quoted string', () => {
     const t = tokens('"hello"');
     expect(at(t, 0)).toEqual({ kind: TokenKind.String, value: 'hello' });
@@ -89,7 +73,7 @@ describe('Scanner — string literals', () => {
     expect(at(t, 0)).toEqual({ kind: TokenKind.String, value: 'world' });
   });
 
-  it('scans a string with embedded spaces (v1 split bug fix)', () => {
+  it('scans a string with embedded spaces (v1.0.14 split bug fix)', () => {
     // In v1.0.14, 'John Doe' would be split into two invalid tokens.
     const t = tokens('"John Doe"');
     expect(at(t, 0)).toEqual({ kind: TokenKind.String, value: 'John Doe' });
@@ -107,8 +91,7 @@ describe('Scanner — string literals', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — identifiers', () => {
+describe('Scanner : identifiers', () => {
   it('scans a simple identifier', () => {
     const t = tokens('price');
     expect(at(t, 0)).toEqual({ kind: TokenKind.Identifier, value: 'price' });
@@ -127,7 +110,7 @@ describe('Scanner — identifiers', () => {
   });
 
   it('scans Unicode identifiers (U+0080+)', () => {
-    // Arabic identifier — required for full Unicode support
+    // Arabic identifier - required for full Unicode support
     const t = tokens('السعر');
     expect(at(t, 0).kind).toBe(TokenKind.Identifier);
     expect(at(t, 0).value).toBe('السعر');
@@ -139,8 +122,7 @@ describe('Scanner — identifiers', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — arithmetic operators', () => {
+describe('Scanner : arithmetic operators', () => {
   it.each([
     ['+', TokenKind.Plus],
     ['-', TokenKind.Minus],
@@ -153,8 +135,7 @@ describe('Scanner — arithmetic operators', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — comparison operators (single-char)', () => {
+describe('Scanner : comparison operators (single-char)', () => {
   it.each([
     ['<', TokenKind.Lt],
     ['>', TokenKind.Gt],
@@ -163,8 +144,7 @@ describe('Scanner — comparison operators (single-char)', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — multi-character operators', () => {
+describe('Scanner : multi-character operators', () => {
   it.each([
     ['<=', TokenKind.LtEq],
     ['>=', TokenKind.GtEq],
@@ -179,8 +159,7 @@ describe('Scanner — multi-character operators', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — grouping and ternary punctuation', () => {
+describe('Scanner : grouping and ternary punctuation', () => {
   it.each([
     ['(', TokenKind.LParen],
     [')', TokenKind.RParen],
@@ -195,8 +174,7 @@ describe('Scanner — grouping and ternary punctuation', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — whitespace handling', () => {
+describe('Scanner : whitespace handling', () => {
   it('ignores leading and trailing whitespace', () => {
     const kinds = tokenKinds('  42  ');
     expect(kinds).toEqual([TokenKind.Number, TokenKind.EOF]);
@@ -223,8 +201,7 @@ describe('Scanner — whitespace handling', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — peek / next / expect contract', () => {
+describe('Scanner : peek / next / expect contract', () => {
   it('peek does not consume the token', () => {
     const s = new Scanner('42');
     const first = s.peek();
@@ -251,8 +228,7 @@ describe('Scanner — peek / next / expect contract', () => {
   });
 });
 
-// =============================================================================
-describe('Scanner — error reporting', () => {
+describe('Scanner : error reporting', () => {
   it('throws ScanError for unrecognised character @', () => {
     expect(() => tokens('price @ 2')).toThrow(ScanError);
   });
@@ -276,7 +252,6 @@ describe('Scanner — error reporting', () => {
   });
 });
 
-// =============================================================================
 describe('Scanner — complex real-world expressions', () => {
   it('tokenizes a full arithmetic expression', () => {
     const kinds = tokenKinds('price * quantity * (1 - discount)');

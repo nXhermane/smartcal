@@ -1,12 +1,3 @@
-/**
- * @file vm_interpreter.test.ts
- * @description Unit tests for the Fast VM (CSP-safe AST evaluator).
- *
- * The VM must produce **identical results** to the JIT Compiler for all
- * supported expressions. This test suite mirrors jit_compiler.test.ts exactly
- * to guarantee parity between the two execution paths.
- */
-
 import { describe, expect, it } from 'vitest';
 import { JITCompiler } from '../../src/compiler/jit-compiler';
 import { VMInterpreter } from '../../src/compiler/vm-interpreter';
@@ -19,8 +10,7 @@ function vmRun(expr: string, data: Record<string, unknown> = {}): number | strin
   return vm.evaluate(parse(expr), data);
 }
 
-// =============================================================================
-describe('VMInterpreter — literals', () => {
+describe('VMInterpreter : literals', () => {
   it('evaluates an integer literal', () => expect(vmRun('42')).toBe(42));
   it('evaluates a float literal', () => expect(vmRun('3.14')).toBe(3.14));
   it('evaluates a string literal', () => expect(vmRun('"hello"')).toBe('hello'));
@@ -28,8 +18,7 @@ describe('VMInterpreter — literals', () => {
     expect(vmRun('"cnt_phase_aiguë"')).toBe('cnt_phase_aiguë'));
 });
 
-// =============================================================================
-describe('VMInterpreter — identifiers / variables', () => {
+describe('VMInterpreter : identifiers / variables', () => {
   it('reads a variable from data', () => {
     expect(vmRun('price', { price: 42 })).toBe(42);
   });
@@ -43,8 +32,7 @@ describe('VMInterpreter — identifiers / variables', () => {
   });
 });
 
-// =============================================================================
-describe('VMInterpreter — arithmetic', () => {
+describe('VMInterpreter : arithmetic', () => {
   it('addition', () => expect(vmRun('2 + 3')).toBe(5));
   it('subtraction', () => expect(vmRun('10 - 4')).toBe(6));
   it('multiplication', () => expect(vmRun('3 * 4')).toBe(12));
@@ -64,8 +52,7 @@ describe('VMInterpreter — arithmetic', () => {
   it('unary minus with variable', () => expect(vmRun('-x', { x: 7 })).toBe(-7));
 });
 
-// =============================================================================
-describe('VMInterpreter — comparisons (return 1 or 0)', () => {
+describe('VMInterpreter : comparisons (return 1 or 0)', () => {
   it.each([
     ['5 == 5', 1],
     ['5 == 6', 0],
@@ -84,8 +71,7 @@ describe('VMInterpreter — comparisons (return 1 or 0)', () => {
   });
 });
 
-// =============================================================================
-describe('VMInterpreter — logical short-circuit', () => {
+describe('VMInterpreter : logical short-circuit', () => {
   it('1 && 1 → 1', () => expect(vmRun('1 && 1')).toBe(1));
   it('1 && 0 → 0', () => expect(vmRun('1 && 0')).toBe(0));
   it('0 && 1 → 0 (short-circuit)', () => expect(vmRun('0 && 1')).toBe(0));
@@ -94,8 +80,7 @@ describe('VMInterpreter — logical short-circuit', () => {
   it('1 || 0 → 1 (short-circuit)', () => expect(vmRun('1 || 0')).toBe(1));
 });
 
-// =============================================================================
-describe('VMInterpreter — ternary conditionals', () => {
+describe('VMInterpreter : ternary conditionals', () => {
   it('simple ternary: true branch', () => expect(vmRun('1 ? 42 : 0')).toBe(42));
   it('simple ternary: false branch', () => expect(vmRun('0 ? 42 : 99')).toBe(99));
 
@@ -113,8 +98,7 @@ describe('VMInterpreter — ternary conditionals', () => {
   });
 });
 
-// =============================================================================
-describe('VMInterpreter — function calls (builtins)', () => {
+describe('VMInterpreter : function calls (builtins)', () => {
   it('abs(-5) = 5', () => expect(vmRun('abs(-5)')).toBe(5));
   it('max(2, 7, 3) = 7', () => expect(vmRun('max(2, 7, 3)')).toBe(7));
   it('min(2, 7, 3) = 2', () => expect(vmRun('min(2, 7, 3)')).toBe(2));
@@ -125,8 +109,7 @@ describe('VMInterpreter — function calls (builtins)', () => {
   it('pow(2, 8) = 256', () => expect(vmRun('pow(2, 8)')).toBe(256));
 });
 
-// =============================================================================
-describe('VMInterpreter — JIT parity check', () => {
+describe('VMInterpreter : JIT parity check', () => {
   /**
    * For every expression below, the VM and JIT MUST return the same result.
    * This is the key correctness invariant of the dual-engine architecture.

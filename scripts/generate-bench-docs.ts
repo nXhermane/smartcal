@@ -1,11 +1,3 @@
-/**
- * @file scripts/generate-bench-docs.ts
- * @description Reads bench/results/current.json and generates markdown tables
- *              for the VitePress benchmarks page.
- *
- * Usage: bun run scripts/generate-bench-docs.ts
- */
-
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -81,7 +73,6 @@ function generateMarkdown(data: BenchmarkOutput): string {
   return lines.join('\n');
 }
 
-// ── Main ────────────────────────────────────────────────────────────────────
 
 const projectRoot = process.cwd();
 const jsonPath = join(projectRoot, 'bench', 'results', 'current.json');

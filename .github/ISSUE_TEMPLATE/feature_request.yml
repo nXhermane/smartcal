@@ -1,0 +1,22 @@
+name: Feature request
+description: Suggest an idea or improvement for SmartCal
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem are you trying to solve, or what would you like SmartCal to do?
+      placeholder: Describe the use case or the feature you have in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How should this work? If you have an API design or example syntax in mind, share it here.
+      placeholder: |
+        calc.registerFunction("custom", ...);
+    validations:
+      required: false

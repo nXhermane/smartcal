@@ -1,17 +1,3 @@
-/**
- * @file jit_compiler.test.ts
- * @description Unit tests for the JIT Compiler (AST → native JS function).
- *
- * Tests verify:
- * - Correct code generation for every AST node type
- * - Arithmetic precedence is preserved
- * - Comparisons return 1 / 0 (v1-compatible ConditionResult)
- * - Logical operators short-circuit (tested via side-effect-free expressions)
- * - Ternary conditionals (including deeply nested — regression for v1 crash)
- * - Function calls (builtins only)
- * - toJS() is deterministic
- */
-
 import { describe, expect, it } from 'vitest';
 import { JITCompiler } from '../../src/compiler/jit-compiler';
 import { parse } from '../../src/parser/parser';
@@ -22,8 +8,7 @@ function jit(expr: string, data: Record<string, unknown> = {}): number | string 
   return fn(data);
 }
 
-// =============================================================================
-describe('JITCompiler — literals', () => {
+describe('JITCompiler : literals', () => {
   it('evaluates an integer literal', () => {
     expect(jit('42')).toBe(42);
   });
@@ -41,8 +26,7 @@ describe('JITCompiler — literals', () => {
   });
 });
 
-// =============================================================================
-describe('JITCompiler — identifiers / variables', () => {
+describe('JITCompiler : identifiers / variables', () => {
   it('reads a variable from data', () => {
     expect(jit('price', { price: 42 })).toBe(42);
   });
@@ -56,8 +40,7 @@ describe('JITCompiler — identifiers / variables', () => {
   });
 });
 
-// =============================================================================
-describe('JITCompiler — arithmetic', () => {
+describe('JITCompiler : arithmetic', () => {
   it('addition', () => expect(jit('2 + 3')).toBe(5));
   it('subtraction', () => expect(jit('10 - 4')).toBe(6));
   it('multiplication', () => expect(jit('3 * 4')).toBe(12));
@@ -82,8 +65,7 @@ describe('JITCompiler — arithmetic', () => {
   });
 });
 
-// =============================================================================
-describe('JITCompiler — comparisons (return 1 or 0)', () => {
+describe('JITCompiler : comparisons (return 1 or 0)', () => {
   it.each([
     ['5 == 5', 1],
     ['5 == 6', 0],
@@ -102,16 +84,14 @@ describe('JITCompiler — comparisons (return 1 or 0)', () => {
   });
 });
 
-// =============================================================================
-describe('JITCompiler — logical operators (return 1 or 0)', () => {
+describe('JITCompiler : logical operators (return 1 or 0)', () => {
   it('1 && 1 → 1', () => expect(jit('1 && 1')).toBe(1));
   it('1 && 0 → 0', () => expect(jit('1 && 0')).toBe(0));
   it('0 || 1 → 1', () => expect(jit('0 || 1')).toBe(1));
   it('0 || 0 → 0', () => expect(jit('0 || 0')).toBe(0));
 });
 
-// =============================================================================
-describe('JITCompiler — ternary conditionals (v1 nested crash regression)', () => {
+describe('JITCompiler : ternary conditionals (v1.0.14 nested crash regression)', () => {
   it('simple ternary: true branch', () => {
     expect(jit('1 ? 42 : 0')).toBe(42);
   });
@@ -130,7 +110,7 @@ describe('JITCompiler — ternary conditionals (v1 nested crash regression)', ()
     expect(jit('a ? 1 : b ? 2 : 3', { a: 0, b: 0 })).toBe(3);
   });
 
-  it('deeply nested ternary (exact crash expression from v1)', () => {
+  it('deeply nested ternary (exact crash expression from v1.0.14)', () => {
     const expr = 'age < 18 ? 0 : age < 25 ? 15 : age < 60 ? 80 : 30';
     expect(jit(expr, { age: 10 })).toBe(0);
     expect(jit(expr, { age: 22 })).toBe(15);
@@ -139,8 +119,7 @@ describe('JITCompiler — ternary conditionals (v1 nested crash regression)', ()
   });
 });
 
-// =============================================================================
-describe('JITCompiler — function calls (builtins)', () => {
+describe('JITCompiler : function calls (builtins)', () => {
   it('abs(-5) = 5', () => expect(jit('abs(-5)')).toBe(5));
   it('max(2, 7, 3) = 7', () => expect(jit('max(2, 7, 3)')).toBe(7));
   it('min(2, 7, 3) = 2', () => expect(jit('min(2, 7, 3)')).toBe(2));
@@ -151,8 +130,7 @@ describe('JITCompiler — function calls (builtins)', () => {
   it('pow(2, 8) = 256', () => expect(jit('pow(2, 8)')).toBe(256));
 });
 
-// =============================================================================
-describe('JITCompiler — complex real-world expressions', () => {
+describe('JITCompiler : complex real-world expressions', () => {
   it('price * quantity * (1 - discount)', () => {
     expect(
       jit('price * quantity * (1 - discount)', {

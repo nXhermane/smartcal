@@ -1,27 +1,3 @@
-/**
- * @file parser.test.ts
- * @description Unit tests for the SmartCal v1.1 Pratt Parser.
- *
- * Coverage goals:
- * - Literal numbers and strings
- * - Single identifiers and f_* sub-formula references
- * - Arithmetic precedence and associativity
- * - Parenthesised grouping
- * - Unary minus
- * - Boolean comparisons
- * - Logical AND / OR
- * - Ternary conditionals (simple, chained, deeply nested)
- * - Function calls (zero / one / many args)
- * - Array literals
- * - Member access (dot and bracket)
- * - Error cases (unexpected tokens, mismatched parentheses)
- *
- * KEY REGRESSION TEST:
- *   The crash discovered in v1.0.14 on deeply-nested ternaries is the very
- *   first thing verified below.  The old `checkTernaryConditionSyntax` flag
- *   toggling caused `IncorrectSyntaxError: found ':' before '?'`.
- */
-
 import { describe, expect, it } from 'vitest';
 import type {
   ArrayLiteralNode,
@@ -34,10 +10,6 @@ import type {
 } from '../../src/ast/nodes';
 import { ParseError } from '../../src/errors/index';
 import { parse } from '../../src/parser/parser';
-
-// =============================================================================
-// Helpers
-// =============================================================================
 
 /** Assert that the root is a BinaryNode with the given operator. */
 function binary(node: ASTNode, op: string): BinaryNode {
@@ -70,10 +42,8 @@ function asMember(node: ASTNode): MemberExpressionNode {
   return node as MemberExpressionNode;
 }
 
-// =============================================================================
-// 🔴 CRITICAL REGRESSION — v1.0.14 crash on nested ternaries
-// =============================================================================
-describe('REGRESSION — nested ternaries (v1.0.14 crash)', () => {
+//  CRITICAL REGRESSION : v1.0.14 crash on nested ternaries
+describe('REGRESSION : nested ternaries (v1.0.14 crash)', () => {
   it('parses a simple ternary: a ? b : c', () => {
     const ast = parse('score >= 90 ? 1 : 0');
     const cond = conditional(ast);
@@ -90,7 +60,7 @@ describe('REGRESSION — nested ternaries (v1.0.14 crash)', () => {
     expect(outer.alternate.type).toBe('Conditional');
   });
 
-  it('parses deeply-nested ternary (the exact expression that crashed v1)', () => {
+  it('parses deeply-nested ternary (the exact expression that crashed v1.0.14)', () => {
     // This expression raised IncorrectSyntaxError in v1.0.14.
     const expr = 'age < 18 ? 0 : (age < 25 ? 15 : (age < 60 ? (income > 50000 ? 120 : 80) : 30))';
     const ast = parse(expr);
@@ -112,10 +82,8 @@ describe('REGRESSION — nested ternaries (v1.0.14 crash)', () => {
   });
 });
 
-// =============================================================================
 // Literals
-// =============================================================================
-describe('Parser — literals', () => {
+describe('Parser : literals', () => {
   it('parses an integer literal', () => {
     expect(parse('42')).toEqual({ type: 'Literal', value: 42 });
   });
@@ -141,10 +109,8 @@ describe('Parser — literals', () => {
   });
 });
 
-// =============================================================================
 // Identifiers
-// =============================================================================
-describe('Parser — identifiers', () => {
+describe('Parser : identifiers', () => {
   it('parses a plain variable', () => {
     expect(parse('price')).toEqual({ type: 'Identifier', name: 'price' });
   });
@@ -158,10 +124,8 @@ describe('Parser — identifiers', () => {
   });
 });
 
-// =============================================================================
-// Arithmetic — precedence and associativity
-// =============================================================================
-describe('Parser — arithmetic precedence', () => {
+// Arithmetic
+describe('Parser : arithmetic precedence', () => {
   it('parses addition: 2 + 3', () => {
     const ast = binary(parse('2 + 3'), '+');
     expect(ast.left).toEqual({ type: 'Literal', value: 2 });
@@ -191,10 +155,8 @@ describe('Parser — arithmetic precedence', () => {
   });
 });
 
-// =============================================================================
 // Parentheses
-// =============================================================================
-describe('Parser — parentheses', () => {
+describe('Parser : parentheses', () => {
   it('overrides default precedence: (2 + 3) * 4 → * at root', () => {
     const ast = binary(parse('(2 + 3) * 4'), '*');
     expect(ast.left.type).toBe('Binary');
@@ -207,10 +169,8 @@ describe('Parser — parentheses', () => {
   });
 });
 
-// =============================================================================
 // Unary minus
-// =============================================================================
-describe('Parser — unary minus', () => {
+describe('Parser : unary minus', () => {
   it('parses -5 as UnaryNode', () => {
     const ast = parse('-5') as UnaryNode;
     expect(ast.type).toBe('Unary');
@@ -236,10 +196,8 @@ describe('Parser — unary minus', () => {
   });
 });
 
-// =============================================================================
 // Comparison operators
-// =============================================================================
-describe('Parser — comparison operators', () => {
+describe('Parser : comparison operators', () => {
   it.each(['==', '!=', '<', '>', '<=', '>='])('parses %s', op => {
     const ast = binary(parse(`a ${op} b`), op);
     expect(ast.left).toEqual({ type: 'Identifier', name: 'a' });
@@ -247,10 +205,8 @@ describe('Parser — comparison operators', () => {
   });
 });
 
-// =============================================================================
 // Logical operators
-// =============================================================================
-describe('Parser — logical operators', () => {
+describe('Parser : logical operators', () => {
   it('parses &&', () => {
     expect(binary(parse('a && b'), '&&')).toBeDefined();
   });
@@ -265,10 +221,8 @@ describe('Parser — logical operators', () => {
   });
 });
 
-// =============================================================================
 // Function calls
-// =============================================================================
-describe('Parser — function calls', () => {
+describe('Parser : function calls', () => {
   it('parses a zero-argument function call: fn()', () => {
     const ast = asFunc(parse('fn()'));
     expect(ast.name).toBe('fn');
@@ -299,10 +253,8 @@ describe('Parser — function calls', () => {
   });
 });
 
-// =============================================================================
 // Array literals
-// =============================================================================
-describe('Parser — array literals', () => {
+describe('Parser : array literals', () => {
   it('parses an empty array []', () => {
     const ast = asArr(parse('[]'));
     expect(ast.elements).toHaveLength(0);
@@ -319,10 +271,8 @@ describe('Parser — array literals', () => {
   });
 });
 
-// =============================================================================
 // Member access
-// =============================================================================
-describe('Parser — member access', () => {
+describe('Parser : member access', () => {
   it('parses bracket indexing: arr[0]', () => {
     const ast = asMember(parse('arr[0]'));
     expect(ast.computed).toBe(true);
@@ -337,10 +287,8 @@ describe('Parser — member access', () => {
   });
 });
 
-// =============================================================================
 // Complex real-world expressions
-// =============================================================================
-describe('Parser — complex real-world expressions', () => {
+describe('Parser : complex real-world expressions', () => {
   it('parses: price * quantity * (1 - discount)', () => {
     const ast = parse('price * quantity * (1 - discount)');
     expect(ast.type).toBe('Binary');
@@ -364,12 +312,10 @@ describe('Parser — complex real-world expressions', () => {
   });
 });
 
-// =============================================================================
 // Error cases
-// =============================================================================
-describe('Parser — error cases', () => {
+describe('Parser : error cases', () => {
   it('throws on trailing garbage: 2 + 3 }', () => {
-    // '}' is not a valid token — ScanError from the Scanner
+    // '}' is not a valid token - ScanError from the Scanner
     expect(() => parse('2 + 3 }')).toThrow();
   });
 

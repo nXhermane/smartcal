@@ -6,7 +6,7 @@
   </picture>
 </div>
 
-<h1 align="center">SmartCal — Ultra High-Performance Expression Engine</h1>
+<h1 align="center">SmartCal - Ultra High-Performance Expression Engine</h1>
 
 <p align="center">
   <strong>Evaluate and compile mathematical & logical expressions at over 2.5 million operations per second in JavaScript and TypeScript.</strong>
@@ -55,7 +55,7 @@ Most mathematical expression evaluators in JavaScript suffer from critical flaws
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (>= 1.4) or [Node.js](https://nodejs.org) (>= 18)
+- [Bun](https://bun.sh) or [Node.js](https://nodejs.org) (>= 18)
 
 ### Installation
 
@@ -92,7 +92,7 @@ import { compile } from 'smartcal';
 // Compile once
 const taxCalc = compile('income > 50000 ? (income - 50000) * 0.30 + 5000 : income * 0.10');
 
-// Evaluate many times (~2.5M+ ops/s)
+// Evaluate many times
 console.log(taxCalc.evaluate({ income: 75000 })); // 12500
 console.log(taxCalc.evaluate({ income: 30000 })); // 3000
 ```
@@ -218,6 +218,12 @@ compile(expression: string, options?: CompileOptions): CompiledExpression
 
 ---
 
+## Contribution
+
+Want to help improve SmartCal? See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, commit guidelines, and the pull request process.
+
+---
+
 <br />
 
 <div align="center">
@@ -227,5 +233,5 @@ compile(expression: string, options?: CompileOptions): CompiledExpression
     <img alt="SmartCal Logo" src=".github/assets/smartcal-logo-light.svg" width="64" />
   </picture>
   <br />
-  <em>SmartCal — Evaluate. Compile. Accelerate.</em>
+  <em>SmartCal - Evaluate. Compile. Accelerate.</em>
 </div>

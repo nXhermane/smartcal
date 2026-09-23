@@ -32,7 +32,9 @@ Options de configuration du moteur d'exécution :
   - `'auto'` (défaut) : Utilise la compilation JIT si disponible, sinon bascule de manière transparente sur la Fast VM.
   - `'jit'` : Force la compilation en fonction native JavaScript via `new Function`.
   - `'vm'` : Force l'évaluation par l'interpréteur Fast VM linéaire (sécurisé CSP).
-
+- `strict` (`boolean`) :
+  - `false` (défaut) : le moteur considère une variable manquante comme étant égale à `0`.
+  - `true` : le moteur lève une exception (`VariableNotFoundError`) lorsqu'une variable est manquante. 
 ---
 
 ## Retours
@@ -46,6 +48,7 @@ Retourne le résultat de l'évaluation sous forme de `number` ou `string`.
 - `InvalidFormulaError` : Si l'expression fournie est vide ou ne contient que des espaces.
 - `IncorrectSyntaxError` : Si la formule comporte une erreur de syntaxe ou un caractère non reconnu.
 - `FormulaResolutionError` : Si une dépendance circulaire est détectée dans les sous-formules `f_*`.
+- `VariableNotFoundError` : Si une variable est manquante dans l'objet `DataType` en mode strict.
 
 ---
 

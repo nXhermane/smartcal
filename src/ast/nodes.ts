@@ -105,3 +105,55 @@ export const isFunctionCall = (n: ASTNode): n is FunctionCallNode => n.type === 
 export const isArrayLiteral = (n: ASTNode): n is ArrayLiteralNode => n.type === 'ArrayLiteral';
 export const isMemberExpression = (n: ASTNode): n is MemberExpressionNode =>
   n.type === 'MemberExpression';
+
+/**
+ * Collect all variable names (IdentifierNode) referenced in an AST.
+ * Excludes `f_*` sub-formula identifiers - those are resolved by FormulaResolver
+ * before execution and are not runtime variables.
+ */
+export function extractRequiredVariables(ast: ASTNode): string[] {
+  const vars = new Set<string>();
+
+  function walk(node: ASTNode): void {
+    switch (node.type) {
+      case 'Identifier': {
+        // Only collect non-f_* identifiers as "required variables"
+        if (!node.name.startsWith('f_')) {
+          vars.add(node.name);
+        }
+        break;
+      }
+      case 'Unary':
+        walk(node.operand);
+        break;
+      case 'Binary':
+        walk(node.left);
+        walk(node.right);
+        break;
+      case 'Conditional':
+        walk(node.test);
+        walk(node.consequent);
+        walk(node.alternate);
+        break;
+      case 'FunctionCall':
+        for (const arg of node.args) walk(arg);
+        break;
+      case 'ArrayLiteral':
+        for (const el of node.elements) walk(el);
+        break;
+      case 'MemberExpression':
+        walk(node.object);
+        if (node.computed) walk(node.property);
+        break;
+      case 'Literal':
+        break;
+      default: {
+        const _exhaustive: never = node;
+        // unreachable if ASTNode is exhaustive
+      }
+    }
+  }
+
+  walk(ast);
+  return Array.from(vars);
+}

@@ -1,12 +1,10 @@
-import { createExecutor, type ExecMode } from '../compiler/execution-strategy';
+import { createExecutor, ExecutorOptions } from '../compiler/execution-strategy';
 import { parse } from '../parser/parser';
 import { FormulaResolver, type RawData } from '../resolver/formula-resolver';
 import type { CompiledExpression, DataType } from '../types';
 
 /** Options for `compile()`. */
-export interface CompileOptions {
-  mode?: ExecMode;
-}
+export type CompileOptions = ExecutorOptions;
 
 /**
  * Compile a formula expression into an object that can be evaluated
@@ -25,7 +23,7 @@ export function compile(expression: string, options: CompileOptions = {}): Compi
   const ast = parse(expression);
 
   // Compile once - creates a native JS function (JIT) or a VM closure.
-  const executor = createExecutor(ast, options.mode ?? 'auto');
+  const executor = createExecutor(ast, options);
 
   return {
     type: 'CompiledExpression' as const,

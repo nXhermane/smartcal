@@ -104,6 +104,40 @@ const jit = compile('price * quantity', { mode: 'jit' });   // Maximum performan
 const vm  = compile('price * quantity', { mode: 'vm' });    // CSP-safe
 const auto = compile('price * quantity', { mode: 'auto' }); // Adaptive
 ```
+### Strict Mode
+
+By default, a variable absent from `data` silently evaluates to `0`.  
+Enable **strict mode** to throw a `VariableNotFoundError` instead:
+
+```typescript
+import SmartCal, { compile, VariableNotFoundError } from 'smartcal';
+
+// SmartCal()
+try {
+  SmartCal('price + tax', { price: 100 }, { strict: true });
+} catch (e) {
+  if (e instanceof VariableNotFoundError) {
+    console.error(`Missing variable: "${e.variable}"`); // "tax"
+  }
+}
+
+// compile()
+const expr = compile('price + tax', { strict: true });
+expr.evaluate({ price: 100, tax: 5 }); // 105
+expr.evaluate({ price: 100 });          // throws VariableNotFoundError("tax")
+```
+
+> **`extractVariables`** lets you validate data before evaluation:
+> ```typescript
+> import { extractVariables } from 'smartcal';
+>
+> const needed = extractVariables('price * (1 - discount)');
+> // ['price', 'discount']
+>
+> const missing = needed.filter(v => !(v in data));
+> if (missing.length) throw new Error(`Missing: ${missing.join(', ')}`);
+> ```
+
 
 ### Expression Validation
 
@@ -202,6 +236,9 @@ isValidExpression(expression: string): boolean
 
 // Compile for reuse
 compile(expression: string, options?: CompileOptions): CompiledExpression
+
+// extract variables
+extractVariables(expression: string): string[]
 ```
 
 ### Error Types
@@ -215,6 +252,7 @@ compile(expression: string, options?: CompileOptions): CompiledExpression
 | `VMError` | Undefined operation in VM mode |
 | `IncorrectSyntaxError` | Legacy syntax error |
 | `InvalidFormulaError` | Empty formula |
+| `VariableNotFoundError` | Variable not found in strict mode |
 
 ---
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { extractVariables, ParseError, ScanError } from '../../src';
 import { compile } from '../../src/api/compile';
 import { isValidExpression } from '../../src/api/is-valid-expression';
 import SmartCal from '../../src/api/smartcal';
@@ -98,5 +99,44 @@ describe('isValidExpression : Pratt Parser powered', () => {
 
   it('validates nested ternaries', () => {
     expect(isValidExpression('a < 18 ? 0 : a < 60 ? 1 : 2')).toBe(true);
+  });
+});
+
+describe('extractVariables', () => {
+  it('should return the simple variables', () => {
+    expect(extractVariables('price * tax')).toEqual(['price', 'tax']);
+  });
+  it('should exclude f_* variables', () => {
+    expect(extractVariables('f_total + price')).toEqual(['price']);
+  });
+  it('should manage complexe expression', () => {
+    expect(extractVariables('(price * 2) + tax')).toEqual(['price', 'tax']);
+  });
+  it('deduplicates repeated variables', () => {
+    expect(extractVariables('a + a * a')).toEqual(['a']);
+  });
+  it('extracts variables from function call arguments', () => {
+    expect(extractVariables('max(a, b, c)')).toEqual(['a', 'b', 'c']);
+  });
+  it('extracts variables from array literals', () => {
+    expect(extractVariables('[a, b, 1]')).toEqual(['a', 'b']);
+  });
+  it('extracts object variable from member expression (dot)', () => {
+    expect(extractVariables('obj.prop')).toEqual(['obj']);
+  });
+  it('extracts variables from computed member expression', () => {
+    expect(extractVariables('list[i]')).toEqual(['list', 'i']);
+  });
+  it('extracts variables from nested ternary', () => {
+    expect(extractVariables('a > 0 ? b : c')).toEqual(['a', 'b', 'c']);
+  });
+  it('throws ScanError for invalid expression', () => {
+    expect(() => extractVariables('price @')).toThrow(ScanError);
+  });
+  it('throws ParseError for incomplete expression', () => {
+    expect(() => extractVariables('price *')).toThrow(ParseError);
+  });
+  it('returns empty array for a pure literal', () => {
+    expect(extractVariables('42')).toEqual([]);
   });
 });

@@ -69,6 +69,22 @@ export class VMError extends Error {
 }
 
 /**
+ * Thrown when `strict` mode is enabled and a variable referenced in the
+ * expression is not present in the data object.
+ */
+export class VariableNotFoundError extends Error {
+  override readonly name = 'VariableNotFoundError';
+
+  constructor(
+    /** The missing variable name. */
+    public readonly variable: string,
+    options?: ErrorOptions,
+  ) {
+    super(`Variable "${variable}" is not defined in the data object.`, options);
+  }
+}
+
+/**
  * Thrown by `FormulaResolver` when a circular dependency is detected in
  * the `f_*` sub-formula DAG.
  *

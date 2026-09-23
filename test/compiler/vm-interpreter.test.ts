@@ -126,7 +126,7 @@ describe('VMInterpreter : JIT parity check', () => {
   for (const [expr, data] of cases) {
     it(`parity: ${expr}`, () => {
       const vmResult = vmRun(expr, data);
-      const jitResult = JITCompiler.compile(parse(expr))(data);
+      const jitResult = new JITCompiler().compile(parse(expr))(data);
       expect(vmResult).toBe(jitResult);
     });
   }

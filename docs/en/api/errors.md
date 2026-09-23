@@ -57,6 +57,23 @@ import { FormulaResolutionError } from 'smartcal';
 - `JITError`: Thrown if compilation to native function fails or is blocked by the page's Content Security Policy.
 - `VMError`: Thrown if the virtual machine encounters an undefined operation or non-existent function.
 
+### `VariableNotFoundError`
+
+Thrown when a variable referenced in a formula is not present in the data object and strict mode is enabled.
+```ts
+import SmartCal, { VariableNotFoundError } from 'smartcal';
+
+const calc = SmartCal('price + tax', { strict: true });
+
+try {
+  calc({ price: 10 });
+} catch (err) {
+  if (err instanceof VariableNotFoundError) {
+    console.log(`Missing variable: ${err.variable}`);
+  }
+}
+```
+
 ---
 
 ## Legacy Error Classes (Backward Compatibility)

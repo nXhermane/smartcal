@@ -32,7 +32,9 @@ Execution engine configuration options:
   - `'auto'` (default): Uses JIT compilation if available, otherwise transparently falls back to Fast VM.
   - `'jit'`: Forces compilation to native JavaScript function via `new Function`.
   - `'vm'`: Forces evaluation by the linear Fast VM interpreter (CSP-safe).
-
+- `strict` (`boolean`):
+  - `false` (default): the engine treats a missing variable as equal to `0`.
+  - `true`: the engine throws an exception (`VariableNotFoundError`) when a variable is missing.
 ---
 
 ## Returns
@@ -46,7 +48,7 @@ Returns the evaluation result as a `number` or `string`.
 - `InvalidFormulaError`: If the provided expression is empty or contains only whitespace.
 - `IncorrectSyntaxError`: If the formula has a syntax error or an unrecognized character.
 - `FormulaResolutionError`: If a circular dependency is detected in `f_*` sub-formulas.
-
+- `VariableNotFoundError`: If a variable is missing from the `DataType` object in strict mode.
 ---
 
 ## Examples

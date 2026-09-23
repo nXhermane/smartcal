@@ -20,7 +20,7 @@ La formule mathématique/logique à compiler.
 
 ### `options` (`CompileOptions`, facultatif)
 - `mode` (`'auto' | 'jit' | 'vm'`) : Mode d'exécution souhaité (par défaut `'auto'`).
-
+- `strict` (`boolean`) : voir [smartcal](./smartcal.md#options)
 ---
 
 ## Interface `CompiledExpression`

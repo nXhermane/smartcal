@@ -1,6 +1,6 @@
 export { type CompileOptions, compile } from './api/compile';
+export { extractVariables } from './api/extract-variables';
 export { isValidExpression } from './api/is-valid-expression';
-
 export { default, type SmartCalOptions } from './api/smartcal';
 
 export type {
@@ -15,6 +15,7 @@ export type {
   UnaryNode,
 } from './ast/nodes';
 export {
+  extractRequiredVariables,
   isArrayLiteral,
   isBinary,
   isConditional,
@@ -38,6 +39,7 @@ export {
   JITError,
   ParseError,
   ScanError,
+  VariableNotFoundError,
   VMError,
 } from './errors/index';
 export { Parser, parse } from './parser/parser';

@@ -59,6 +59,25 @@ import { FormulaResolutionError } from 'smartcal';
 
 ---
 
+### `VariableNotFoundError`
+
+Levée lorsqu'une variable référencée dans une formule n'est pas présente dans l'objet de données et que le mode strict est activé.
+
+```ts 
+import SmartCal, { VariableNotFoundError } from 'smartcal';
+
+const calc = SmartCal('price + tax', { strict: true });
+
+try {
+  calc({ price: 10 });
+} catch (err) {
+  if (err instanceof VariableNotFoundError) {
+    console.log(`Variable manquante: ${err.variable}`);
+  }
+}
+
+```
+---
 ## Classes d'Erreurs Rétrocompatibles (Legacy)
 
 Pour garantir 100% de rétrocompatibilité avec les versions antérieures (v1.0.x), les classes d'erreurs historiques restent exportées :

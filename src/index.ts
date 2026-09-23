@@ -38,6 +38,7 @@ export {
   JITError,
   ParseError,
   ScanError,
+  VariableNotFoundError,
   VMError,
 } from './errors/index';
 export { Parser, parse } from './parser/parser';

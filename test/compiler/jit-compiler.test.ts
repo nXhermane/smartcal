@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { VariableNotFoundError } from '../../src';
 import { JITCompiler } from '../../src/compiler/jit-compiler';
 import { parse } from '../../src/parser/parser';
 
 /** Shorthand: parse expression + JIT compile + run with data. */
-function jit(expr: string, data: Record<string, unknown> = {}): number | string {
-  const fn = JITCompiler.compile(parse(expr));
+function jit(expr: string, data: Record<string, unknown> = {}, strict = false): number | string {
+  const fn = new JITCompiler(strict).compile(parse(expr));
   return fn(data);
 }
 
@@ -146,5 +147,16 @@ describe('JITCompiler : complex real-world expressions', () => {
     expect(jit(expr, { income: 120000 })).toBe(48000);
     expect(jit(expr, { income: 60000 })).toBe(18000);
     expect(jit(expr, { income: 30000 })).toBe(6000);
+  });
+});
+
+describe('JITCompiler : strict mode', () => {
+  it('should throw VariableNotFoundError for missing variables', () => {
+    expect(() => jit('price + tax', { price: 10 }, true)).toThrow(VariableNotFoundError);
+    expect(() => jit('price + tax', { price: 10 }, true)).toThrow('Variable "tax" is not defined');
+  });
+
+  it('should work when all needed variables are defined', () => {
+    expect(jit('price + tax', { price: 10, tax: 5 }, true)).toBe(15);
   });
 });

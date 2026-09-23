@@ -1,4 +1,5 @@
 import type { ASTNode } from '../ast/nodes';
+import type { VariableNotFoundError } from '../errors';
 import type { ResolvedData } from '../resolver/formula-resolver';
 import { type CompiledFn, isJITAvailable, JITCompiler } from './jit-compiler';
 import { VMInterpreter } from './vm-interpreter';
@@ -12,6 +13,18 @@ import { VMInterpreter } from './vm-interpreter';
 export type ExecMode = 'auto' | 'jit' | 'vm';
 
 /**
+ * Options for configuring the executor behavior.
+ *
+ * @property mode   - `'auto'` (default) | `'jit'` | `'vm'`. See {@link ExecMode}.
+ * @property strict - If `true`, throws {@link VariableNotFoundError} on missing variables
+ *                    instead of defaulting to `0`.
+ */
+export interface ExecutorOptions {
+  mode?: ExecMode;
+  strict?: boolean;
+}
+
+/**
  * Compile an AST into a callable function using the selected execution mode.
  *
  * Returns a `CompiledFn` that accepts a `ResolvedData` record and returns
@@ -19,15 +32,16 @@ export type ExecMode = 'auto' | 'jit' | 'vm';
  */
 export function createExecutor(
   ast: ASTNode,
-  mode: ExecMode = 'auto',
+  options: ExecutorOptions,
 ): (data: ResolvedData) => number | string {
+  const { mode = 'auto', strict = false } = options;
   const useJIT = mode === 'jit' || (mode === 'auto' && isJITAvailable());
 
   if (useJIT) {
-    const fn: CompiledFn = JITCompiler.compile(ast);
+    const fn: CompiledFn = new JITCompiler(strict).compile(ast);
     return (data: ResolvedData) => fn(data as Record<string, unknown>);
   }
 
-  const vm = new VMInterpreter();
+  const vm = new VMInterpreter(strict);
   return (data: ResolvedData) => vm.evaluate(ast, data);
 }

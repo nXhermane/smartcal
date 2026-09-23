@@ -1,10 +1,14 @@
 import type { ASTNode } from '../ast/nodes';
-import { JITError } from '../errors/index';
+import { JITError, VariableNotFoundError } from '../errors/index';
 import { FunctionRegistry, MathFn } from '../registry/function-registry';
 
 /** A compiled expression function - accepts a data record and returns a value. */
 export type CompiledFn = (data?: Record<string, unknown>) => number | string;
 
+/** @throws {VariableNotFoundError} with name */
+type OnMissingFn = (name: string) => void;
+
+type Factory = (registry: Record<string, MathFn>, miss: OnMissingFn) => CompiledFn;
 /**
  * @description - JIT Code generator
  * ## How it works
@@ -28,23 +32,29 @@ export type CompiledFn = (data?: Record<string, unknown>) => number | string;
  */
 export class JITCompiler {
   /**
+   * Creates a new JIT compiler instance.
+   *
+   * @param strict - When true, throws VariableNotFoundError for missing variables instead of defaulting to 0
+   */
+  constructor(private readonly strict = false) {}
+  /**
    * Compile an `ASTNode` into a native JS function.
    *
    * @throws {JITError} if `new Function` is blocked by the environment (CSP).
    *   In that case, fall back to `VMInterpreter`.
    */
-  static compile(ast: ASTNode): CompiledFn {
+  compile(ast: ASTNode): CompiledFn {
     const usedFunctions = new Set<string>();
-    const jsCode = JITCompiler.toJS(ast, usedFunctions);
+    const jsCode = this.toJS(ast, usedFunctions);
 
     // "use strict" prevents access to globals like `window` or `process`.
     // `d` is the data object - the only external input.
     // `__registry` is function object
     const src = `"use strict"; return (d) => (${jsCode});`;
 
-    let factory: (registry: Record<string, MathFn>) => CompiledFn;
+    let factory: Factory;
     try {
-      factory = new Function('__registry', src) as (registry: Record<string, MathFn>) => CompiledFn;
+      factory = new Function('__registry', '__onMissing', src) as Factory;
     } catch (err) {
       throw new JITError(
         'new Function is blocked by the current environment (CSP). Use mode:"vm" instead.',
@@ -61,7 +71,11 @@ export class JITCompiler {
       registry[name] = fn;
     }
 
-    return factory(registry);
+    const onMissing: OnMissingFn = (name: string) => {
+      throw new VariableNotFoundError(name);
+    };
+
+    return factory(registry, onMissing);
   }
 
   /**
@@ -70,7 +84,7 @@ export class JITCompiler {
    * The output is always a valid JS expression that can be wrapped in
    * `return (d) => (...)` and passed to `new Function`.
    */
-  static toJS(node: ASTNode, usedFunctions: Set<string>): string {
+  private toJS(node: ASTNode, usedFunctions: Set<string>): string {
     switch (node.type) {
       // Leaf nodes
       case 'Literal': {
@@ -81,36 +95,39 @@ export class JITCompiler {
 
       case 'Identifier': {
         // Variables are read from the data object `d` only.
-        // `?? 0` ensures missing numeric variables default to 0.
-        // For f_* sub-formulas the value is pre-resolved into `d` by the
-        // FormulaResolver before compilation.
+        if (this.strict) {
+          return `(Object.hasOwn(d,${JSON.stringify(node.name)})
+           ? d[${JSON.stringify(node.name)}]
+           : __onMissing(${JSON.stringify(node.name)}))`;
+        }
+        // Non-strict: default to 0
         return `(d[${JSON.stringify(node.name)}]??0)`;
       }
 
       // Unary
       case 'Unary': {
-        return `(-(${JITCompiler.toJS(node.operand, usedFunctions)}))`;
+        return `(-(${this.toJS(node.operand, usedFunctions)}))`;
       }
 
       // Binary
       case 'Binary': {
-        const l = JITCompiler.toJS(node.left, usedFunctions);
-        const r = JITCompiler.toJS(node.right, usedFunctions);
-        return JITCompiler.binaryToJS(node.op, l, r);
+        const l = this.toJS(node.left, usedFunctions);
+        const r = this.toJS(node.right, usedFunctions);
+        return this.binaryToJS(node.op, l, r);
       }
 
       // Ternary conditional
       case 'Conditional': {
-        const test = JITCompiler.toJS(node.test, usedFunctions);
-        const cons = JITCompiler.toJS(node.consequent, usedFunctions);
-        const alt = JITCompiler.toJS(node.alternate, usedFunctions);
+        const test = this.toJS(node.test, usedFunctions);
+        const cons = this.toJS(node.consequent, usedFunctions);
+        const alt = this.toJS(node.alternate, usedFunctions);
         return `(${test}?(${cons}):(${alt}))`;
       }
 
       // Function calls
       case 'FunctionCall': {
         const name = node.name.toLowerCase();
-        const args = node.args.map(a => JITCompiler.toJS(a, usedFunctions)).join(',');
+        const args = node.args.map(a => this.toJS(a, usedFunctions)).join(',');
 
         // Custom function - must be registered in FunctionRegistry.
         if (!FunctionRegistry.has(name)) {
@@ -125,16 +142,22 @@ export class JITCompiler {
 
       // Array literal (future - not yet evaluated by JIT)
       case 'ArrayLiteral': {
-        const elems = node.elements.map(e => JITCompiler.toJS(e, usedFunctions)).join(',');
+        const elems = node.elements.map(e => this.toJS(e, usedFunctions)).join(',');
         return `[${elems}]`;
       }
 
       // Member expression (future)
       case 'MemberExpression': {
-        const obj = JITCompiler.toJS(node.object, usedFunctions);
+        const obj = this.toJS(node.object, usedFunctions);
         const prop = node.computed
-          ? JITCompiler.toJS(node.property, usedFunctions)
+          ? this.toJS(node.property, usedFunctions)
           : JSON.stringify((node.property as { name: string }).name);
+        if (this.strict) {
+          const varName = node.computed
+            ? prop
+            : JSON.stringify((node.property as { name: string }).name);
+          return `(Object.hasOwn(${obj},${prop})?${obj}[${prop}]: __onMissing(${JSON.stringify(varName)}))`;
+        }
         return `(${obj}[${prop}]??0)`;
       }
 
@@ -147,7 +170,7 @@ export class JITCompiler {
   }
 
   // Binary operator code generation
-  private static binaryToJS(op: string, l: string, r: string): string {
+  private binaryToJS(op: string, l: string, r: string): string {
     switch (op) {
       // Arithmetic
       case '+':

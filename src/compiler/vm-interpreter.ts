@@ -1,5 +1,5 @@
 import type { ASTNode, BinaryNode } from '../ast/nodes';
-import { VMError } from '../errors/index';
+import { VariableNotFoundError, VMError } from '../errors/index';
 import { FunctionRegistry } from '../registry/function-registry';
 
 /** A plain data record - variable names -> values. */
@@ -24,6 +24,12 @@ export type DataRecord = Record<string, unknown>;
  * TypeScript's exhaustive narrowing ensures every node type is handled.
  */
 export class VMInterpreter {
+  /**
+   * Creates a new VM interpreter instance.
+   *
+   * @param strict - When true, throws VariableNotFoundError for missing variables instead of defaulting to 0
+   */
+  constructor(private readonly strict = false) {}
   /**
    * Evaluate `ast` against `data` and return the result.
    *
@@ -75,6 +81,12 @@ export class VMInterpreter {
           : (node.property as { name: string }).name;
         const container = obj as unknown as Record<string | number, unknown>;
         const val = container[prop as string | number];
+
+        if (val === undefined) {
+          if (this.strict) throw new VariableNotFoundError(String(prop));
+          return 0;
+        }
+
         return typeof val === 'number' || typeof val === 'string' ? val : 0;
       }
 
@@ -143,8 +155,12 @@ export class VMInterpreter {
       // null / undefined -> default 0
       return 0;
     }
-    // Unknown variable defaults to 0.
-    // The API layer can choose to throw here if strict mode is requested.
+
+    if (this.strict) {
+      throw new VariableNotFoundError(name);
+    }
+
+    //Non-strict: Unknown variable defaults to 0.
     return 0;
   }
 }

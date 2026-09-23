@@ -127,6 +127,17 @@ expr.evaluate({ price: 100, tax: 5 }); // 105
 expr.evaluate({ price: 100 });          // throws VariableNotFoundError("tax")
 ```
 
+> **`extractVariables`** lets you validate data before evaluation:
+> ```typescript
+> import { extractVariables } from 'smartcal';
+>
+> const needed = extractVariables('price * (1 - discount)');
+> // ['price', 'discount']
+>
+> const missing = needed.filter(v => !(v in data));
+> if (missing.length) throw new Error(`Missing: ${missing.join(', ')}`);
+> ```
+
 
 ### Expression Validation
 
@@ -225,6 +236,9 @@ isValidExpression(expression: string): boolean
 
 // Compile for reuse
 compile(expression: string, options?: CompileOptions): CompiledExpression
+
+// extract variables
+extractVariables(expression: string): string[]
 ```
 
 ### Error Types

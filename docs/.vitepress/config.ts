@@ -1,4 +1,7 @@
 import { withMermaid } from 'vitepress-plugin-mermaid';
+import { version } from './../../package.json';
+
+const currentVersion = version;
 
 export default withMermaid({
   title: 'SmartCal',
@@ -33,7 +36,7 @@ export default withMermaid({
       { text: 'Architecture & Théorie', link: '/internals/architecture' },
       { text: 'Benchmarks', link: '/internals/benchmarks' },
       {
-        text: 'v1.1.0',
+        text: `v${currentVersion}`,
         items: [
           { text: 'Changelog', link: 'https://github.com/nXhermane/smartcal/blob/master/CHANGELOG.md' },
           { text: 'GitHub Repository', link: 'https://github.com/nXhermane/smartcal' },
@@ -70,6 +73,7 @@ export default withMermaid({
             { text: 'SmartCal()', link: '/api/smartcal' },
             { text: 'compile() & JIT/VM', link: '/api/compile' },
             { text: 'isValidExpression()', link: '/api/is-valid-expression' },
+            { text: 'extractVariables()', link: '/api/extract-variables' },
             { text: 'FunctionRegistry', link: '/api/function-registry' },
             { text: 'Gestion des Erreurs', link: '/api/errors' },
           ],
@@ -118,7 +122,7 @@ export default withMermaid({
           { text: 'Architecture & Theory', link: '/en/internals/architecture' },
           { text: 'Benchmarks', link: '/en/internals/benchmarks' },
           {
-            text: 'v1.1.0',
+            text:  `v${currentVersion}`,
             items: [
               { text: 'Changelog', link: 'https://github.com/nXhermane/smartcal/blob/master/CHANGELOG.md' },
               { text: 'GitHub Repository', link: 'https://github.com/nXhermane/smartcal' },
@@ -155,6 +159,7 @@ export default withMermaid({
                 { text: 'SmartCal()', link: '/en/api/smartcal' },
                 { text: 'compile() & JIT/VM', link: '/en/api/compile' },
                 { text: 'isValidExpression()', link: '/en/api/is-valid-expression' },
+            { text: 'extractVariables()', link: '/en/api/extract-variables' },
                 { text: 'FunctionRegistry', link: '/en/api/function-registry' },
                 { text: 'Error Handling', link: '/en/api/errors' },
               ],

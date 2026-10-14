@@ -1,4 +1,5 @@
 import { ScanError } from '../errors/index';
+import { encodeTwoCharKey, type ScannerExtensions } from './scanner-extensions';
 import { EOF_TOKEN, type Token, TokenKind } from './token';
 
 export class Scanner {
@@ -8,7 +9,10 @@ export class Scanner {
   /** One-token lookahead cache. `null` means "not yet scanned". */
   private _peeked: Token | null = null;
 
-  constructor(private readonly src: string) {
+  constructor(
+    private readonly src: string,
+    private readonly extensions?: ScannerExtensions,
+  ) {
     this.len = src.length;
   }
 
@@ -77,6 +81,19 @@ export class Scanner {
 
     const start = this.pos;
     const ch = this.src.charCodeAt(this.pos);
+
+    // 0. Custom token handlers (plugin extensions, in registration order).
+    if (this.extensions !== undefined) {
+      for (const handler of this.extensions.tokenHandlers) {
+        const before = this.pos;
+        const token = handler(ch, this.src, this.pos, n => {
+          this.pos += n;
+        });
+        if (token !== null) return token;
+        // Handlers returning null must not advance; restore position defensively.
+        if (this.pos !== before) this.pos = before;
+      }
+    }
 
     // 1. Numbers: [0-9] (\.[0-9]+)?
     if (ch >= 48 && ch <= 57) {
@@ -207,6 +224,8 @@ export class Scanner {
     if (c1 === 38 && c2 === 38) return TokenKind.And;
     // || (124, 124)
     if (c1 === 124 && c2 === 124) return TokenKind.Or;
+    const custom = this.extensions?.twoCharOps.get(encodeTwoCharKey(c1, c2));
+    if (custom !== undefined) return custom as TokenKind;
     return TokenKind.EOF; // sentinel — not a two-char op
   }
 
@@ -248,8 +267,11 @@ export class Scanner {
         return TokenKind.RBracket; // ]
       case 46:
         return TokenKind.Dot; // .
-      default:
+      default: {
+        const custom = this.extensions?.singleCharOps.get(ch);
+        if (custom !== undefined) return custom as TokenKind;
         return TokenKind.EOF; // unrecognised — caller throws
+      }
     }
   }
 }

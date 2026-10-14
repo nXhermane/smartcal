@@ -5,7 +5,7 @@ import { parse } from '../../src/parser/parser';
 
 /** Shorthand: parse expression + JIT compile + run with data. */
 function jit(expr: string, data: Record<string, unknown> = {}, strict = false): number | string {
-  const fn = new JITCompiler(strict).compile(parse(expr));
+  const fn = new JITCompiler({ strict, mode: 'jit' }).compile(parse(expr));
   return fn(data);
 }
 

@@ -1,3 +1,5 @@
+import { ASTExtensions } from './ast-extensions';
+
 /** A numeric or string literal: `42`, `3.14`, `"hello"`. */
 export interface LiteralNode {
   readonly type: 'Literal';
@@ -96,6 +98,11 @@ export type ASTNode =
   | ArrayLiteralNode
   | MemberExpressionNode;
 
+export interface CustomASTNode {
+  type: string;
+  [key: string]: unknown;
+}
+
 export const isLiteral = (n: ASTNode): n is LiteralNode => n.type === 'Literal';
 export const isIdentifier = (n: ASTNode): n is IdentifierNode => n.type === 'Identifier';
 export const isUnary = (n: ASTNode): n is UnaryNode => n.type === 'Unary';
@@ -111,7 +118,7 @@ export const isMemberExpression = (n: ASTNode): n is MemberExpressionNode =>
  * Excludes `f_*` sub-formula identifiers - those are resolved by FormulaResolver
  * before execution and are not runtime variables.
  */
-export function extractRequiredVariables(ast: ASTNode): string[] {
+export function extractRequiredVariables(ast: ASTNode, astExtensions: ASTExtensions): string[] {
   const vars = new Set<string>();
 
   function walk(node: ASTNode): void {
@@ -148,6 +155,13 @@ export function extractRequiredVariables(ast: ASTNode): string[] {
       case 'Literal':
         break;
       default: {
+        const _node = node as CustomASTNode;
+        const extractor = astExtensions.extractors.get(_node.type);
+        if (extractor) {
+          const children = extractor(node as Record<string, unknown>);
+          for (const child of children) walk(child as ASTNode);
+          break;
+        }
         const _exhaustive: never = node;
         // unreachable if ASTNode is exhaustive
       }

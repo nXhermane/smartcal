@@ -1,6 +1,9 @@
 import type { ASTNode, BinaryNode } from '../ast/nodes';
 import { VariableNotFoundError, VMError } from '../errors/index';
 import { FunctionRegistry } from '../registry/function-registry';
+import type { InstanceFunctionRegistry } from '../registry/instance-registry';
+import { ExecutorOptions } from '../types';
+import type { VMExtensions } from './vm-extensions';
 
 /** A plain data record - variable names -> values. */
 export type DataRecord = Record<string, unknown>;
@@ -27,9 +30,15 @@ export class VMInterpreter {
   /**
    * Creates a new VM interpreter instance.
    *
-   * @param strict - When true, throws VariableNotFoundError for missing variables instead of defaulting to 0
+   * @param options - strict : When true, throws VariableNotFoundError for missing variables instead of defaulting to 0
+   * @param registry - Instance registry for function lookup, falls back to global FunctionRegistry
+   * @param extensions - Custom binary ops and node visitors
    */
-  constructor(private readonly strict = false) {}
+  constructor(
+    private readonly options: ExecutorOptions = { strict: false },
+    private readonly registry?: InstanceFunctionRegistry,
+    private readonly extensions?: VMExtensions,
+  ) {}
   /**
    * Evaluate `ast` against `data` and return the result.
    *
@@ -60,7 +69,8 @@ export class VMInterpreter {
       }
 
       case 'FunctionCall': {
-        const fn = FunctionRegistry.get(node.name);
+        const reg = this.registry ?? FunctionRegistry;
+        const fn = reg.get(node.name);
         if (fn === undefined) {
           throw new VMError(`Unknown function: "${node.name}"`);
         }
@@ -83,7 +93,7 @@ export class VMInterpreter {
         const val = container[prop as string | number];
 
         if (val === undefined) {
-          if (this.strict) throw new VariableNotFoundError(String(prop));
+          if (this.options.strict) throw new VariableNotFoundError(String(prop));
           return 0;
         }
 
@@ -91,6 +101,15 @@ export class VMInterpreter {
       }
 
       default: {
+        const customVisitor = this.extensions?.nodeVisitors.get((node as unknown as ASTNode).type);
+        if (customVisitor) {
+          return customVisitor(
+            node as unknown as Record<string, unknown>,
+            (sub, d) => this.visit(sub as ASTNode, d),
+            data,
+            this.options,
+          );
+        }
         // Exhaustive check - TypeScript will flag missing cases at compile time.
         const _exhaustive: never = node;
         throw new VMError(`Unsupported node type: ${(_exhaustive as ASTNode).type}`);
@@ -100,6 +119,11 @@ export class VMInterpreter {
 
   private visitBinary(node: BinaryNode, data: DataRecord): number | string {
     // Short-circuit logical operators before evaluating both sides.
+    const lazyOp = this.extensions?.lazyBinaryOps.get(node.op);
+    if (lazyOp) {
+      return lazyOp(node.left, node.right, subNode => this.visit(subNode, data), this.options);
+    }
+
     if (node.op === '&&') {
       const l = this.visit(node.left, data);
       if (!l) return 0;
@@ -113,6 +137,9 @@ export class VMInterpreter {
 
     const l = this.visit(node.left, data);
     const r = this.visit(node.right, data);
+
+    const customOp = this.extensions?.binaryOps.get(node.op);
+    if (customOp) return customOp(l, r);
 
     switch (node.op) {
       // Arithmetic
@@ -156,7 +183,7 @@ export class VMInterpreter {
       return 0;
     }
 
-    if (this.strict) {
+    if (this.options.strict) {
       throw new VariableNotFoundError(name);
     }
 

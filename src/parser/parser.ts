@@ -1,14 +1,61 @@
 import type { ASTNode } from '../ast/nodes';
-import { ParseError } from '../errors/index';
+import { ParseError, ScanError } from '../errors/index';
 import { Scanner } from '../scanner/scanner';
-import { type Token, TokenKind } from '../scanner/token';
+import { EOF_TOKEN, type Token, TokenKind } from '../scanner/token';
+import type { ParserExtensions } from './parser-extensions';
 import { getInfixBP } from './precedence';
 
-export class Parser {
-  private readonly scanner: Scanner;
+interface TokenReader {
+  peek(): Token;
+  next(): Token;
+  expect(kind: TokenKind): Token;
+}
 
-  constructor(source: string) {
-    this.scanner = new Scanner(source);
+class TokenArrayReader implements TokenReader {
+  private index = 0;
+
+  constructor(
+    private readonly tokens: readonly Token[],
+    private readonly src: string,
+  ) {}
+
+  peek(): Token {
+    return this.tokens[this.index] ?? EOF_TOKEN;
+  }
+
+  next(): Token {
+    const t = this.tokens[this.index];
+    if (t === undefined) return EOF_TOKEN;
+    this.index++;
+    return t;
+  }
+
+  expect(kind: TokenKind): Token {
+    const t = this.next();
+    if (t.kind !== kind) {
+      throw new ScanError(
+        `Expected token kind=${kind} but got kind=${t.kind} ("${t.value}")`,
+        this.src,
+        t.start,
+      );
+    }
+    return t;
+  }
+}
+
+export class Parser {
+  private readonly scanner: TokenReader;
+  private readonly extensions?: ParserExtensions;
+
+  constructor(sourceOrReader: string | TokenReader, extensions?: ParserExtensions) {
+    this.scanner =
+      typeof sourceOrReader === 'string' ? new Scanner(sourceOrReader) : sourceOrReader;
+    this.extensions = extensions;
+  }
+
+  static fromTokens(src: string, tokens: Token[], extensions?: ParserExtensions): Parser {
+    const instance = new Parser(new TokenArrayReader(tokens, src), extensions);
+    return instance;
   }
 
   /**
@@ -28,23 +75,18 @@ export class Parser {
     return node;
   }
 
-  /**
-   * Parse an expression whose operators must have a binding power strictly
-   * greater than `minBP`.
-   *
-   * This is the fundamental Pratt loop:
-   * ```
-   * let left = nud(next())
-   * while (minBP < BP[peek()]) { left = led(next(), left) }
-   * return left
-   * ```
-   */
+  private _getInfixBP(kind: number): number {
+    const custom = this.extensions?.bindingPowers.get(kind);
+    if (custom !== undefined) return custom;
+    return getInfixBP(kind as TokenKind);
+  }
+
   private parseExpression(minBP: number): ASTNode {
     // 1. Parse the prefix part (NUD)
     let left = this.nud(this.scanner.next());
 
     // 2. Consume infix / postfix operators as long as they bind tighter
-    while (minBP < getInfixBP(this.scanner.peek().kind)) {
+    while (minBP < this._getInfixBP(this.scanner.peek().kind)) {
       left = this.led(this.scanner.next(), left);
     }
 
@@ -55,13 +97,17 @@ export class Parser {
    * NUD - Null Denotation (prefix position)
    */
   private nud(token: Token): ASTNode {
+    const customNud = this.extensions?.nudHandlers.get(token.kind);
+    if (customNud) {
+      return customNud(token, minBP => this.parseExpression(minBP));
+    }
     switch (token.kind) {
       // Literals
       case TokenKind.Number:
-        return { type: 'Literal', value: token.value as number };
+        return { type: 'Literal', value: token.value };
 
       case TokenKind.String:
-        return { type: 'Literal', value: token.value as string };
+        return { type: 'Literal', value: token.value };
 
       // Variables and sub-formula references (f_*)
       case TokenKind.Identifier: {
@@ -103,6 +149,10 @@ export class Parser {
    * LED - Left Denotation (infix / postfix position)
    */
   private led(op: Token, left: ASTNode): ASTNode {
+    const customLed = this.extensions?.ledHandlers.get(op.kind);
+    if (customLed) {
+      return customLed(op, left, minBP => this.parseExpression(minBP));
+    }
     switch (op.kind) {
       // Standard left-associative binary operators
       case TokenKind.Plus:
@@ -118,7 +168,7 @@ export class Parser {
       case TokenKind.GtEq:
       case TokenKind.And:
       case TokenKind.Or: {
-        const bp = getInfixBP(op.kind);
+        const bp = this._getInfixBP(op.kind);
         const right = this.parseExpression(bp); // left-associative: same BP
         return {
           type: 'Binary',
@@ -130,8 +180,7 @@ export class Parser {
 
       // Exponentiation: right-associative
       case TokenKind.Caret: {
-        const bp = getInfixBP(op.kind);
-        // Pass bp - 1 so that `2 ^ 3 ^ 4` parses as `2 ^ (3 ^ 4)`.
+        const bp = this._getInfixBP(op.kind);
         const right = this.parseExpression(bp - 1);
         return { type: 'Binary', op: '^', left, right };
       }
@@ -151,7 +200,7 @@ export class Parser {
         this.scanner.next(); // consume ':'
         // Parse the alternate right-associatively:
         // BP[?] - 1 allows another `?` to appear inside the alternate branch.
-        const ternaryBP = getInfixBP(TokenKind.Question);
+        const ternaryBP = this._getInfixBP(TokenKind.Question);
         const alternate = this.parseExpression(ternaryBP - 1);
         return {
           type: 'Conditional',
@@ -242,6 +291,6 @@ export class Parser {
  *
  * @throws {ParseError | ScanError}
  */
-export function parse(source: string): ASTNode {
-  return new Parser(source).parse();
+export function parse(source: string, extensions?: ParserExtensions): ASTNode {
+  return new Parser(source, extensions).parse();
 }

@@ -1,5 +1,6 @@
 import { FormulaResolutionError } from '../errors/index';
-import type { CompiledExpression } from '../types';
+import type { SmartCalPlugin } from '../plugin/types';
+import type { CompiledExpression, DataType } from '../types';
 
 /** A data object that may contain CompiledExpression sub-formulas. */
 export type RawData = Record<string, number | string | CompiledExpression>;
@@ -84,3 +85,13 @@ export class FormulaResolver {
     return result;
   }
 }
+
+export const formulaResolverPlugin: SmartCalPlugin = {
+  name: 'smartcal-formula-resolver',
+  version: '2.0.0',
+  install(ctx) {
+    ctx.hooks.beforeEval((data: DataType) => {
+      return FormulaResolver.resolve(data);
+    });
+  },
+};

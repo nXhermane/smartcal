@@ -1,4 +1,4 @@
-import { parse } from '../parser/parser';
+import { globalEngine } from '../global-engine';
 
 /**
  * Returns `true` if the expression can be parsed without errors,
@@ -9,11 +9,5 @@ import { parse } from '../parser/parser';
  * isValidExpression('price *')                 // false
  */
 export function isValidExpression(expression: string): boolean {
-  if (!expression || expression.trim().length === 0) return false;
-  try {
-    parse(expression);
-    return true;
-  } catch {
-    return false;
-  }
+  return globalEngine.isValidExpression(expression);
 }

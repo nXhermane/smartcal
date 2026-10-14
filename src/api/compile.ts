@@ -1,10 +1,6 @@
-import { createExecutor, ExecutorOptions } from '../compiler/execution-strategy';
-import { parse } from '../parser/parser';
-import { FormulaResolver, type RawData } from '../resolver/formula-resolver';
-import type { CompiledExpression, DataType } from '../types';
-
-/** Options for `compile()`. */
-export type CompileOptions = ExecutorOptions;
+import { CompileOptions } from '../engine';
+import { globalEngine } from '../global-engine';
+import type { CompiledExpression } from '../types';
 
 /**
  * Compile a formula expression into an object that can be evaluated
@@ -19,23 +15,5 @@ export type CompileOptions = ExecutorOptions;
  * expr.evaluate({ price: 200, discount: 0.1 }); // 180
  */
 export function compile(expression: string, options: CompileOptions = {}): CompiledExpression {
-  // Parse once - throws on invalid syntax.
-  const ast = parse(expression);
-
-  // Compile once - creates a native JS function (JIT) or a VM closure.
-  const executor = createExecutor(ast, options);
-
-  return {
-    type: 'CompiledExpression' as const,
-
-    evaluate<T extends DataType>(data: T): string | number {
-      // Flatten any f_* CompiledExpression values before evaluation.
-      const resolved = FormulaResolver.resolve(data as unknown as RawData);
-      return executor(resolved);
-    },
-
-    toString(): string {
-      return expression;
-    },
-  };
+  return globalEngine.compile(expression, options);
 }

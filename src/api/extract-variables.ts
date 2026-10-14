@@ -1,5 +1,4 @@
-import { extractRequiredVariables } from '../ast/nodes';
-import { parse } from '../parser/parser';
+import { globalEngine } from '../global-engine';
 
 /**
  * Parse an expression and return all variable names it references.
@@ -8,6 +7,5 @@ import { parse } from '../parser/parser';
  * @throws {ScanError | ParseError} if the expression is syntactically invalid.
  */
 export function extractVariables(expression: string): string[] {
-  const ast = parse(expression);
-  return extractRequiredVariables(ast);
+  return globalEngine.extractVariables(expression);
 }

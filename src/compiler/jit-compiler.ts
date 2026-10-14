@@ -1,6 +1,9 @@
 import type { ASTNode } from '../ast/nodes';
 import { JITError, VariableNotFoundError } from '../errors/index';
-import { FunctionRegistry, MathFn } from '../registry/function-registry';
+import { FunctionRegistry, type MathFn } from '../registry/function-registry';
+import type { InstanceFunctionRegistry } from '../registry/instance-registry';
+import { ExecutorOptions } from '../types';
+import type { JITExtensions } from './jit-extensions';
 
 /** A compiled expression function - accepts a data record and returns a value. */
 export type CompiledFn = (data?: Record<string, unknown>) => number | string;
@@ -8,7 +11,7 @@ export type CompiledFn = (data?: Record<string, unknown>) => number | string;
 /** @throws {VariableNotFoundError} with name */
 type OnMissingFn = (name: string) => void;
 
-type Factory = (registry: Record<string, MathFn>, miss: OnMissingFn) => CompiledFn;
+type Factory = (...args: unknown[]) => CompiledFn;
 /**
  * @description - JIT Code generator
  * ## How it works
@@ -34,9 +37,15 @@ export class JITCompiler {
   /**
    * Creates a new JIT compiler instance.
    *
-   * @param strict - When true, throws VariableNotFoundError for missing variables instead of defaulting to 0
+   * @param options - strict : When true, throws VariableNotFoundError for missing variables instead of defaulting to 0
+   * @param registry - Instance registry for function lookup, falls back to global FunctionRegistry
+   * @param extensions - Custom binary ops and node code generators
    */
-  constructor(private readonly strict = false) {}
+  constructor(
+    private readonly options: ExecutorOptions = { strict: false },
+    private readonly registry?: InstanceFunctionRegistry,
+    private readonly extensions?: JITExtensions,
+  ) {}
   /**
    * Compile an `ASTNode` into a native JS function.
    *
@@ -47,24 +56,10 @@ export class JITCompiler {
     const usedFunctions = new Set<string>();
     const jsCode = this.toJS(ast, usedFunctions);
 
-    // "use strict" prevents access to globals like `window` or `process`.
-    // `d` is the data object - the only external input.
-    // `__registry` is function object
-    const src = `"use strict"; return (d) => (${jsCode});`;
-
-    let factory: Factory;
-    try {
-      factory = new Function('__registry', '__onMissing', src) as Factory;
-    } catch (err) {
-      throw new JITError(
-        'new Function is blocked by the current environment (CSP). Use mode:"vm" instead.',
-        err instanceof Error ? err : undefined,
-      );
-    }
-
+    const reg = this.registry ?? FunctionRegistry;
     const registry: Record<string, MathFn> = {};
     for (const name of usedFunctions) {
-      const fn = FunctionRegistry.get(name);
+      const fn = reg.get(name);
       if (!fn) {
         throw new JITError(`Unknown function: "${name}"`);
       }
@@ -75,7 +70,35 @@ export class JITCompiler {
       throw new VariableNotFoundError(name);
     };
 
-    return factory(registry, onMissing);
+    const helpers: Record<string, unknown> = {
+      __registry: registry,
+      __onMissing: onMissing,
+    };
+
+    if (this.extensions) {
+      for (const [id, provider] of this.extensions.runtimeHelpers) {
+        helpers[id] = provider(this.options);
+      }
+    }
+
+    const paramNames = Object.keys(helpers);
+    const paramValues = Object.values(helpers);
+
+    // "use strict" prevents access to globals like `window` or `process`.
+    // `d` is the data object - the only external input.
+    const src = `"use strict"; return (d) => (${jsCode});`;
+
+    let factory: Factory;
+    try {
+      factory = new Function(...paramNames, src) as Factory;
+    } catch (err) {
+      throw new JITError(
+        'new Function is blocked by the current environment (CSP). Use mode:"vm" instead.',
+        err instanceof Error ? err : undefined,
+      );
+    }
+
+    return factory(...paramValues);
   }
 
   /**
@@ -95,7 +118,7 @@ export class JITCompiler {
 
       case 'Identifier': {
         // Variables are read from the data object `d` only.
-        if (this.strict) {
+        if (this.options.strict) {
           return `(Object.hasOwn(d,${JSON.stringify(node.name)})
            ? d[${JSON.stringify(node.name)}]
            : __onMissing(${JSON.stringify(node.name)}))`;
@@ -129,8 +152,8 @@ export class JITCompiler {
         const name = node.name.toLowerCase();
         const args = node.args.map(a => this.toJS(a, usedFunctions)).join(',');
 
-        // Custom function - must be registered in FunctionRegistry.
-        if (!FunctionRegistry.has(name)) {
+        const reg = this.registry ?? FunctionRegistry;
+        if (!reg.has(name)) {
           throw new JITError(`Unknown function: "${node.name}"`);
         }
         usedFunctions.add(name);
@@ -152,7 +175,7 @@ export class JITCompiler {
         const prop = node.computed
           ? this.toJS(node.property, usedFunctions)
           : JSON.stringify((node.property as { name: string }).name);
-        if (this.strict) {
+        if (this.options.strict) {
           const varName = node.computed
             ? prop
             : JSON.stringify((node.property as { name: string }).name);
@@ -162,6 +185,14 @@ export class JITCompiler {
       }
 
       default: {
+        const customGen = this.extensions?.nodeGenerators.get((node as unknown as ASTNode).type);
+        if (customGen) {
+          return customGen(
+            node as unknown as Record<string, unknown>,
+            sub => this.toJS(sub as ASTNode, usedFunctions),
+            this.options,
+          );
+        }
         // Exhaustive check - TypeScript will warn if a node type is missing.
         const _exhaustive: never = node;
         throw new JITError(`Unsupported AST node type: ${(_exhaustive as ASTNode).type}`);
@@ -171,6 +202,9 @@ export class JITCompiler {
 
   // Binary operator code generation
   private binaryToJS(op: string, l: string, r: string): string {
+    const customGen = this.extensions?.binaryOps.get(op);
+    if (customGen) return customGen(l, r);
+
     switch (op) {
       // Arithmetic
       case '+':

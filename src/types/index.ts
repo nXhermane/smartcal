@@ -37,3 +37,23 @@ export const ConditionResult = {
 } as const;
 
 export type ConditionResultType = (typeof ConditionResult)[keyof typeof ConditionResult];
+
+/**
+ * Execution mode at runtime:
+ * - `'jit'`  - always use `new Function` (fastest)
+ * - `'vm'`   - always use the VM interpreter (CSP-safe)
+ * - `'auto'` - use JIT if available, fall back to VM automatically
+ */
+export type ExecMode = 'auto' | 'jit' | 'vm';
+
+/**
+ * Options for configuring the executor behavior.
+ *
+ * @property mode   - `'auto'` (default) | `'jit'` | `'vm'`. See {@link ExecMode}.
+ * @property strict - If `true`, throws {@link VariableNotFoundError} on missing variables
+ *                    instead of defaulting to `0`.
+ */
+export interface ExecutorOptions {
+  mode?: ExecMode;
+  strict?: boolean;
+}

@@ -5,6 +5,13 @@ All notable changes to SmartCal will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/nXhermane/smartcal/compare/v1.2.0...v1.3.0) (2026-10-25)
+
+
+### Features
+
+* **core:** introduce modular plugin architecture and engine lifecycle ([#34](https://github.com/nXhermane/smartcal/issues/34)) ([1af750b](https://github.com/nXhermane/smartcal/commit/1af750b1d1c40a97ab9702d075ed1538c4ec85e4))
+
 ## [1.2.0](https://github.com/nXhermane/smartcal/compare/v1.1.1...v1.2.0) (2026-09-23)
 
 
